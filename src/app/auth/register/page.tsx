@@ -11,7 +11,13 @@ import { Eye, EyeOff, FileText, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
 import { useAuth } from '@/hooks/useAuth';
 import { registerSchema, type RegisterFormData } from '@/lib/validations/auth';
 
@@ -31,10 +37,8 @@ export default function RegisterPage() {
 
   const onSubmit = async (data: RegisterFormData) => {
     try {
-      const { error } = await signUp(data.email, data.password, {
-        full_name: data.name,
-      });
-      
+      const { error } = await signUp(data.email, data.password, data.name);
+
       if (error) {
         toast.error('Erro ao criar conta', {
           description: error.message,
@@ -54,115 +58,121 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
-      <div className="w-full max-w-md">
+    <div className='min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4'>
+      <div className='w-full max-w-md'>
         {/* Logo */}
-        <div className="flex items-center justify-center mb-8">
-          <div className="flex items-center space-x-2">
-            <FileText className="h-8 w-8 text-blue-600" />
-            <span className="text-2xl font-bold text-gray-900">Doclify</span>
+        <div className='flex items-center justify-center mb-8'>
+          <div className='flex items-center space-x-2'>
+            <FileText className='h-8 w-8 text-blue-600' />
+            <span className='text-2xl font-bold text-gray-900'>Doclify</span>
           </div>
         </div>
 
         <Card>
-          <CardHeader className="space-y-1">
-            <CardTitle className="text-2xl font-bold text-center">Criar Conta</CardTitle>
-            <CardDescription className="text-center">
+          <CardHeader className='space-y-1'>
+            <CardTitle className='text-2xl font-bold text-center'>
+              Criar Conta
+            </CardTitle>
+            <CardDescription className='text-center'>
               Crie sua conta gratuita no Doclify
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="name">Nome completo</Label>
+            <form onSubmit={handleSubmit(onSubmit)} className='space-y-4'>
+              <div className='space-y-2'>
+                <Label htmlFor='name'>Nome completo</Label>
                 <Input
-                  id="name"
-                  type="text"
-                  placeholder="Seu nome completo"
+                  id='name'
+                  type='text'
+                  placeholder='Seu nome completo'
                   {...register('name')}
                   className={errors.name ? 'border-red-500' : ''}
                 />
                 {errors.name && (
-                  <p className="text-sm text-red-500">{errors.name.message}</p>
+                  <p className='text-sm text-red-500'>{errors.name.message}</p>
                 )}
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
+              <div className='space-y-2'>
+                <Label htmlFor='email'>Email</Label>
                 <Input
-                  id="email"
-                  type="email"
-                  placeholder="seu@email.com"
+                  id='email'
+                  type='email'
+                  placeholder='seu@email.com'
                   {...register('email')}
                   className={errors.email ? 'border-red-500' : ''}
                 />
                 {errors.email && (
-                  <p className="text-sm text-red-500">{errors.email.message}</p>
+                  <p className='text-sm text-red-500'>{errors.email.message}</p>
                 )}
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="password">Senha</Label>
-                <div className="relative">
+              <div className='space-y-2'>
+                <Label htmlFor='password'>Senha</Label>
+                <div className='relative'>
                   <Input
-                    id="password"
+                    id='password'
                     type={showPassword ? 'text' : 'password'}
-                    placeholder="Mínimo 6 caracteres"
+                    placeholder='Mínimo 6 caracteres'
                     {...register('password')}
-                    className={errors.password ? 'border-red-500 pr-10' : 'pr-10'}
+                    className={
+                      errors.password ? 'border-red-500 pr-10' : 'pr-10'
+                    }
                   />
                   <button
-                    type="button"
+                    type='button'
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                    className='absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700'
                   >
                     {showPassword ? (
-                      <EyeOff className="h-4 w-4" />
+                      <EyeOff className='h-4 w-4' />
                     ) : (
-                      <Eye className="h-4 w-4" />
+                      <Eye className='h-4 w-4' />
                     )}
                   </button>
                 </div>
                 {errors.password && (
-                  <p className="text-sm text-red-500">{errors.password.message}</p>
+                  <p className='text-sm text-red-500'>
+                    {errors.password.message}
+                  </p>
                 )}
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="confirmPassword">Confirmar senha</Label>
-                <div className="relative">
+              <div className='space-y-2'>
+                <Label htmlFor='confirmPassword'>Confirmar senha</Label>
+                <div className='relative'>
                   <Input
-                    id="confirmPassword"
+                    id='confirmPassword'
                     type={showConfirmPassword ? 'text' : 'password'}
-                    placeholder="Confirme sua senha"
+                    placeholder='Confirme sua senha'
                     {...register('confirmPassword')}
-                    className={errors.confirmPassword ? 'border-red-500 pr-10' : 'pr-10'}
+                    className={
+                      errors.confirmPassword ? 'border-red-500 pr-10' : 'pr-10'
+                    }
                   />
                   <button
-                    type="button"
+                    type='button'
                     onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                    className='absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700'
                   >
                     {showConfirmPassword ? (
-                      <EyeOff className="h-4 w-4" />
+                      <EyeOff className='h-4 w-4' />
                     ) : (
-                      <Eye className="h-4 w-4" />
+                      <Eye className='h-4 w-4' />
                     )}
                   </button>
                 </div>
                 {errors.confirmPassword && (
-                  <p className="text-sm text-red-500">{errors.confirmPassword.message}</p>
+                  <p className='text-sm text-red-500'>
+                    {errors.confirmPassword.message}
+                  </p>
                 )}
               </div>
 
-              <Button
-                type="submit"
-                className="w-full"
-                disabled={isLoading}
-              >
+              <Button type='submit' className='w-full' disabled={isLoading}>
                 {isLoading ? (
                   <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    <Loader2 className='mr-2 h-4 w-4 animate-spin' />
                     Criando conta...
                   </>
                 ) : (
@@ -171,32 +181,37 @@ export default function RegisterPage() {
               </Button>
             </form>
 
-            <div className="mt-6">
-              <div className="relative">
-                <div className="absolute inset-0 flex items-center">
-                  <div className="w-full border-t border-gray-300" />
+            <div className='mt-6'>
+              <div className='relative'>
+                <div className='absolute inset-0 flex items-center'>
+                  <div className='w-full border-t border-gray-300' />
                 </div>
-                <div className="relative flex justify-center text-sm">
-                  <span className="px-2 bg-white text-gray-500">Já tem uma conta?</span>
+                <div className='relative flex justify-center text-sm'>
+                  <span className='px-2 bg-white text-gray-500'>
+                    Já tem uma conta?
+                  </span>
                 </div>
               </div>
 
-              <div className="mt-4">
-                <Link href="/auth/login">
-                  <Button variant="outline" className="w-full">
+              <div className='mt-4'>
+                <Link href='/auth/login'>
+                  <Button variant='outline' className='w-full'>
                     Fazer login
                   </Button>
                 </Link>
               </div>
             </div>
 
-            <div className="mt-6 text-xs text-center text-gray-500">
+            <div className='mt-6 text-xs text-center text-gray-500'>
               Ao criar uma conta, você concorda com nossos{' '}
-              <Link href="/terms" className="text-blue-600 hover:text-blue-500">
+              <Link href='/terms' className='text-blue-600 hover:text-blue-500'>
                 Termos de Uso
               </Link>{' '}
               e{' '}
-              <Link href="/privacy" className="text-blue-600 hover:text-blue-500">
+              <Link
+                href='/privacy'
+                className='text-blue-600 hover:text-blue-500'
+              >
                 Política de Privacidade
               </Link>
               .
@@ -204,11 +219,8 @@ export default function RegisterPage() {
           </CardContent>
         </Card>
 
-        <div className="mt-8 text-center">
-          <Link
-            href="/"
-            className="text-sm text-gray-600 hover:text-gray-500"
-          >
+        <div className='mt-8 text-center'>
+          <Link href='/' className='text-sm text-gray-600 hover:text-gray-500'>
             ← Voltar para o início
           </Link>
         </div>

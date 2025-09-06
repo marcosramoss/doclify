@@ -8,9 +8,10 @@ interface ProjectState {
   currentStep: number;
   isLoading: boolean;
   error: string | null;
-  
+
   // Actions
   setCurrentProject: (project: Project | null) => void;
+  updateProject: (updates: Partial<Project>) => void;
   setCurrentStep: (step: number) => void;
   setLoading: (loading: boolean) => void;
   setError: (error: string | null) => void;
@@ -19,40 +20,52 @@ interface ProjectState {
   previousStep: () => void;
 }
 
-export const useProjectStore = create<ProjectState>()(devtools(
-  (set, get) => ({
-    currentProject: null,
-    currentStep: 0,
-    isLoading: false,
-    error: null,
-    
-    setCurrentProject: (project) => set({ currentProject: project }),
-    setCurrentStep: (step) => set({ currentStep: step }),
-    setLoading: (loading) => set({ isLoading: loading }),
-    setError: (error) => set({ error }),
-    
-    resetProject: () => set({
+export const useProjectStore = create<ProjectState>()(
+  devtools(
+    (set, get) => ({
       currentProject: null,
       currentStep: 0,
       isLoading: false,
       error: null,
+
+      setCurrentProject: project => set({ currentProject: project }),
+
+      updateProject: updates =>
+        set(state => ({
+          currentProject: state.currentProject
+            ? { ...state.currentProject, ...updates }
+            : (updates as Project),
+        })),
+
+      setCurrentStep: step => set({ currentStep: step }),
+      setLoading: loading => set({ isLoading: loading }),
+      setError: error => set({ error }),
+
+      resetProject: () =>
+        set({
+          currentProject: null,
+          currentStep: 0,
+          isLoading: false,
+          error: null,
+        }),
+
+      nextStep: () => {
+        const { currentStep } = get();
+        if (currentStep < 8) {
+          // Total of 9 steps (0-8)
+          set({ currentStep: currentStep + 1 });
+        }
+      },
+
+      previousStep: () => {
+        const { currentStep } = get();
+        if (currentStep > 0) {
+          set({ currentStep: currentStep - 1 });
+        }
+      },
     }),
-    
-    nextStep: () => {
-      const { currentStep } = get();
-      if (currentStep < 8) { // Total of 9 steps (0-8)
-        set({ currentStep: currentStep + 1 });
-      }
-    },
-    
-    previousStep: () => {
-      const { currentStep } = get();
-      if (currentStep > 0) {
-        set({ currentStep: currentStep - 1 });
-      }
-    },
-  }),
-  {
-    name: 'project-store',
-  }
-));
+    {
+      name: 'project-store',
+    }
+  )
+);

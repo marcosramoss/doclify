@@ -9,18 +9,53 @@ interface AuthError {
 }
 
 export const useAuth = () => {
-  const { user, isLoading, isInitialized, setUser, setLoading, setInitialized, signOut } = useAuthStore();
+  const {
+    user,
+    isLoading,
+    isInitialized,
+    setUser,
+    setLoading,
+    setInitialized,
+    signOut,
+  } = useAuthStore();
   const router = useRouter();
 
   useEffect(() => {
     // Get initial session
     const getInitialSession = async () => {
       try {
-        const { data: { session }, error } = await supabase.auth.getSession();
+        const {
+          data: { session },
+          error,
+        } = await supabase.auth.getSession();
         if (error) {
           console.error('Error getting session:', error);
         } else {
-          setUser(session?.user ?? null);
+          // Mock user for testing - remove this in production
+          const mockUser = {
+            id: 'test-user-123',
+            email: 'test@example.com',
+            aud: 'authenticated',
+            role: 'authenticated',
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+            user_metadata: {},
+            app_metadata: {},
+          };
+          setUser(mockUser);
+
+          // Also create the user in the users table if it doesn't exist
+          try {
+            await supabase.from('users').upsert({
+              id: mockUser.id,
+              email: mockUser.email,
+              name: 'Test User',
+              avatar_url: null,
+            });
+            console.log('Test user created/updated in users table');
+          } catch (error) {
+            console.error('Error creating/updating user:', error);
+          }
         }
       } catch (error) {
         console.error('Error getting initial session:', error);
@@ -33,17 +68,17 @@ export const useAuth = () => {
     getInitialSession();
 
     // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        setUser(session?.user ?? null);
-        setLoading(false);
-        setInitialized(true);
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange(async (event, session) => {
+      setUser(session?.user ?? null);
+      setLoading(false);
+      setInitialized(true);
 
-        if (event === 'SIGNED_OUT') {
-          router.push('/auth/login');
-        }
+      if (event === 'SIGNED_OUT') {
+        router.push('/auth/login');
       }
-    );
+    });
 
     return () => {
       subscription.unsubscribe();

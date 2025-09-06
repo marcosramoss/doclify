@@ -2,7 +2,17 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { Plus, Search, Filter, MoreHorizontal, FileText, Calendar, Users, Eye, Edit, Trash2 } from 'lucide-react';
+import {
+  Plus,
+  Search,
+  Filter,
+  MoreHorizontal,
+  FileText,
+  Users,
+  Eye,
+  Edit,
+  Trash2,
+} from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { toast } from 'sonner';
@@ -56,18 +66,21 @@ const statusLabels = {
 export default function ProjectsPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [deleteProjectId, setDeleteProjectId] = useState<string | null>(null);
-  const { data: projects, isLoading, error, deleteProject } = useProjects();
+  const { projects, isLoading, error, deleteProject, isDeleting } =
+    useProjects();
 
-  const filteredProjects = projects?.filter(project =>
-    project.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    project.description?.toLowerCase().includes(searchTerm.toLowerCase())
-  ) || [];
+  const filteredProjects =
+    projects?.filter(
+      project =>
+        project.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        project.description?.toLowerCase().includes(searchTerm.toLowerCase())
+    ) || [];
 
   const handleDeleteProject = async () => {
     if (!deleteProjectId) return;
-    
+
     try {
-      await deleteProject.mutateAsync(deleteProjectId);
+      await deleteProject(deleteProjectId);
       toast.success('Projeto excluído com sucesso!');
       setDeleteProjectId(null);
     } catch (error) {
@@ -77,11 +90,14 @@ export default function ProjectsPage() {
 
   if (isLoading) {
     return (
-      <AppLayout title="Projetos" description="Gerencie todos os seus projetos de documentação">
-        <div className="flex items-center justify-center h-64">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4" />
-            <p className="text-gray-600">Carregando projetos...</p>
+      <AppLayout
+        title='Projetos'
+        description='Gerencie todos os seus projetos de documentação'
+      >
+        <div className='flex items-center justify-center h-64'>
+          <div className='text-center'>
+            <div className='animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4' />
+            <p className='text-gray-600'>Carregando projetos...</p>
           </div>
         </div>
       </AppLayout>
@@ -90,39 +106,47 @@ export default function ProjectsPage() {
 
   if (error) {
     return (
-      <AppLayout title="Projetos" description="Gerencie todos os seus projetos de documentação">
-        <div className="text-center py-12">
-          <p className="text-red-600 mb-4">Erro ao carregar projetos</p>
-          <Button onClick={() => window.location.reload()}>Tentar novamente</Button>
+      <AppLayout
+        title='Projetos'
+        description='Gerencie todos os seus projetos de documentação'
+      >
+        <div className='text-center py-12'>
+          <p className='text-red-600 mb-4'>Erro ao carregar projetos</p>
+          <Button onClick={() => window.location.reload()}>
+            Tentar novamente
+          </Button>
         </div>
       </AppLayout>
     );
   }
 
   return (
-    <AppLayout title="Projetos" description="Gerencie todos os seus projetos de documentação">
-      <div className="space-y-6">
+    <AppLayout
+      title='Projetos'
+      description='Gerencie todos os seus projetos de documentação'
+    >
+      <div className='space-y-6'>
         {/* Actions Bar */}
-        <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
-          <div className="flex flex-1 items-center space-x-2">
-            <div className="relative flex-1 max-w-sm">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+        <div className='flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between'>
+          <div className='flex flex-1 items-center space-x-2'>
+            <div className='relative flex-1 max-w-sm'>
+              <Search className='absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4' />
               <Input
-                placeholder="Buscar projetos..."
+                placeholder='Buscar projetos...'
                 value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10"
+                onChange={e => setSearchTerm(e.target.value)}
+                className='pl-10'
               />
             </div>
-            <Button variant="outline" size="sm">
-              <Filter className="h-4 w-4 mr-2" />
+            <Button variant='outline' size='sm'>
+              <Filter className='h-4 w-4 mr-2' />
               Filtros
             </Button>
           </div>
-          
+
           <Button asChild>
-            <Link href="/editor/new">
-              <Plus className="h-4 w-4 mr-2" />
+            <Link href='/editor/new'>
+              <Plus className='h-4 w-4 mr-2' />
               Novo Projeto
             </Link>
           </Button>
@@ -130,28 +154,29 @@ export default function ProjectsPage() {
 
         {/* Projects Table */}
         {filteredProjects.length === 0 ? (
-          <div className="text-center py-12">
-            <FileText className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-lg font-medium text-gray-900 mb-2">
-              {searchTerm ? 'Nenhum projeto encontrado' : 'Nenhum projeto ainda'}
+          <div className='text-center py-12'>
+            <FileText className='h-12 w-12 text-gray-400 mx-auto mb-4' />
+            <h3 className='text-lg font-medium text-gray-900 mb-2'>
+              {searchTerm
+                ? 'Nenhum projeto encontrado'
+                : 'Nenhum projeto ainda'}
             </h3>
-            <p className="text-gray-600 mb-6">
-              {searchTerm 
-                ? 'Tente ajustar os termos de busca' 
-                : 'Comece criando seu primeiro projeto de documentação'
-              }
+            <p className='text-gray-600 mb-6'>
+              {searchTerm
+                ? 'Tente ajustar os termos de busca'
+                : 'Comece criando seu primeiro projeto de documentação'}
             </p>
             {!searchTerm && (
               <Button asChild>
-                <Link href="/editor/new">
-                  <Plus className="h-4 w-4 mr-2" />
+                <Link href='/editor/new'>
+                  <Plus className='h-4 w-4 mr-2' />
                   Criar Primeiro Projeto
                 </Link>
               </Button>
             )}
           </div>
         ) : (
-          <div className="bg-white rounded-lg border">
+          <div className='bg-white rounded-lg border'>
             <Table>
               <TableHeader>
                 <TableRow>
@@ -160,49 +185,58 @@ export default function ProjectsPage() {
                   <TableHead>Equipe</TableHead>
                   <TableHead>Criado em</TableHead>
                   <TableHead>Atualizado</TableHead>
-                  <TableHead className="w-[50px]"></TableHead>
+                  <TableHead className='w-[50px]'></TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredProjects.map((project) => (
+                {filteredProjects.map(project => (
                   <TableRow key={project.id}>
                     <TableCell>
-                      <div className="space-y-1">
-                        <Link 
+                      <div className='space-y-1'>
+                        <Link
                           href={`/projects/${project.id}`}
-                          className="font-medium hover:text-blue-600 transition-colors"
+                          className='font-medium hover:text-blue-600 transition-colors'
                         >
-                          {project.name}
+                          {project.title}
                         </Link>
                         {project.description && (
-                          <p className="text-sm text-gray-500 line-clamp-1">
+                          <p className='text-sm text-gray-500 line-clamp-1'>
                             {project.description}
                           </p>
                         )}
                       </div>
                     </TableCell>
                     <TableCell>
-                      <Badge 
-                        variant="secondary" 
-                        className={statusColors[project.status as keyof typeof statusColors]}
+                      <Badge
+                        variant='secondary'
+                        className={
+                          statusColors[
+                            project.status as keyof typeof statusColors
+                          ]
+                        }
                       >
-                        {statusLabels[project.status as keyof typeof statusLabels]}
+                        {
+                          statusLabels[
+                            project.status as keyof typeof statusLabels
+                          ]
+                        }
                       </Badge>
                     </TableCell>
                     <TableCell>
                       {project.team && project.team.length > 0 ? (
-                        <div className="flex items-center">
-                          <Users className="h-4 w-4 mr-1 text-gray-400" />
-                          {project.team.length} membro{project.team.length > 1 ? 's' : ''}
+                        <div className='flex items-center'>
+                          <Users className='h-4 w-4 mr-1 text-gray-400' />
+                          {project.team.length} membro
+                          {project.team.length > 1 ? 's' : ''}
                         </div>
                       ) : (
-                        <span className="text-gray-400">-</span>
+                        <span className='text-gray-400'>-</span>
                       )}
                     </TableCell>
-                    <TableCell className="text-sm text-gray-500">
+                    <TableCell className='text-sm text-gray-500'>
                       {formatDate(project.created_at)}
                     </TableCell>
-                    <TableCell className="text-sm text-gray-500">
+                    <TableCell className='text-sm text-gray-500'>
                       {formatDistanceToNow(new Date(project.updated_at), {
                         addSuffix: true,
                         locale: ptBR,
@@ -211,29 +245,29 @@ export default function ProjectsPage() {
                     <TableCell>
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="sm">
-                            <MoreHorizontal className="h-4 w-4" />
+                          <Button variant='ghost' size='sm'>
+                            <MoreHorizontal className='h-4 w-4' />
                           </Button>
                         </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
+                        <DropdownMenuContent align='end'>
                           <DropdownMenuItem asChild>
                             <Link href={`/projects/${project.id}`}>
-                              <Eye className="h-4 w-4 mr-2" />
+                              <Eye className='h-4 w-4 mr-2' />
                               Ver Detalhes
                             </Link>
                           </DropdownMenuItem>
                           <DropdownMenuItem asChild>
                             <Link href={`/editor/${project.id}`}>
-                              <Edit className="h-4 w-4 mr-2" />
+                              <Edit className='h-4 w-4 mr-2' />
                               Editar
                             </Link>
                           </DropdownMenuItem>
                           <DropdownMenuSeparator />
-                          <DropdownMenuItem 
-                            className="text-red-600 focus:text-red-600"
+                          <DropdownMenuItem
+                            className='text-red-600 focus:text-red-600'
                             onClick={() => setDeleteProjectId(project.id)}
                           >
-                            <Trash2 className="h-4 w-4 mr-2" />
+                            <Trash2 className='h-4 w-4 mr-2' />
                             Excluir
                           </DropdownMenuItem>
                         </DropdownMenuContent>
@@ -248,22 +282,26 @@ export default function ProjectsPage() {
       </div>
 
       {/* Delete Confirmation Dialog */}
-      <AlertDialog open={!!deleteProjectId} onOpenChange={() => setDeleteProjectId(null)}>
+      <AlertDialog
+        open={!!deleteProjectId}
+        onOpenChange={() => setDeleteProjectId(null)}
+      >
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Excluir Projeto</AlertDialogTitle>
             <AlertDialogDescription>
-              Tem certeza que deseja excluir este projeto? Esta ação não pode ser desfeita.
+              Tem certeza que deseja excluir este projeto? Esta ação não pode
+              ser desfeita.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancelar</AlertDialogCancel>
-            <AlertDialogAction 
+            <AlertDialogAction
               onClick={handleDeleteProject}
-              className="bg-red-600 hover:bg-red-700"
-              disabled={deleteProject.isPending}
+              className='bg-red-600 hover:bg-red-700'
+              disabled={isDeleting}
             >
-              {deleteProject.isPending ? 'Excluindo...' : 'Excluir'}
+              {isDeleting ? 'Excluindo...' : 'Excluir'}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

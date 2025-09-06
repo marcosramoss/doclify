@@ -18,6 +18,17 @@ export interface Project {
   updated_at: string;
   company_name?: string;
   project_type?: string;
+  team?: TeamMember[];
+  members?: TeamMember[];
+  technologies?: Technology[];
+  architecture?: string;
+  objectives?: Objective[];
+  success_criteria?: string;
+  constraints?: string;
+  start_date?: string;
+  end_date?: string;
+  milestones?: Milestone[];
+  methodology?: string;
 }
 
 export interface TeamMember {
@@ -30,12 +41,13 @@ export interface TeamMember {
 }
 
 export interface Technology {
-  id: string;
-  project_id: string;
+  id?: string;
+  project_id?: string;
   name: string;
-  category: 'frontend' | 'backend' | 'database' | 'infrastructure' | 'other';
+  category: 'frontend' | 'backend' | 'database' | 'mobile' | 'devops' | 'other';
   version?: string;
-  created_at: string;
+  description?: string;
+  created_at?: string;
 }
 
 export interface Audience {
@@ -48,13 +60,24 @@ export interface Audience {
 }
 
 export interface Objective {
-  id: string;
-  project_id: string;
+  id?: string;
+  project_id?: string;
   title: string;
   description: string;
   priority: 'high' | 'medium' | 'low';
+  status?: 'pending' | 'in_progress' | 'completed';
+  created_at?: string;
+}
+
+export interface Milestone {
+  id?: string;
+  project_id?: string;
+  title: string;
+  description?: string;
+  due_date: string;
+  type?: string;
   status: 'pending' | 'in_progress' | 'completed';
-  created_at: string;
+  created_at?: string;
 }
 
 export interface FunctionalRequirement {
@@ -73,7 +96,13 @@ export interface NonFunctionalRequirement {
   project_id: string;
   title: string;
   description: string;
-  category: 'performance' | 'security' | 'usability' | 'reliability' | 'scalability' | 'other';
+  category:
+    | 'performance'
+    | 'security'
+    | 'usability'
+    | 'reliability'
+    | 'scalability'
+    | 'other';
   metric?: string;
   target_value?: string;
   created_at: string;

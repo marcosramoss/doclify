@@ -252,6 +252,17 @@ CREATE POLICY "Users can manage signatures for own projects" ON public.signature
     )
   );
 
+-- Insert test user for development
+INSERT INTO public.users (id, email, name, avatar_url, created_at, updated_at)
+VALUES (
+  'test-user-123',
+  'test@example.com',
+  'Test User',
+  NULL,
+  NOW(),
+  NOW()
+) ON CONFLICT (id) DO NOTHING;
+
 -- Create indexes for better performance
 CREATE INDEX IF NOT EXISTS idx_projects_user_id ON public.projects(user_id);
 CREATE INDEX IF NOT EXISTS idx_projects_created_at ON public.projects(created_at DESC);
