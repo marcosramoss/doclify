@@ -171,6 +171,13 @@ export function ObjectivesStep({ onNext, onBack }: ObjectivesStepProps) {
       title: title || '',
       description: '',
       priority: 'medium',
+      type: type as
+        | 'business'
+        | 'technical'
+        | 'user'
+        | 'performance'
+        | 'security'
+        | 'other',
     });
   };
 
@@ -184,6 +191,13 @@ export function ObjectivesStep({ onNext, onBack }: ObjectivesStepProps) {
         title,
         description: '',
         priority: 'medium',
+        type: type as
+          | 'business'
+          | 'technical'
+          | 'user'
+          | 'performance'
+          | 'security'
+          | 'other',
       });
     }
   };
@@ -240,7 +254,9 @@ export function ObjectivesStep({ onNext, onBack }: ObjectivesStepProps) {
         <Tabs value={activeTab} onValueChange={setActiveTab}>
           <TabsList className='grid w-full grid-cols-6'>
             {typeOptions.map(type => {
-              const count = watchedObjectives.length;
+              const count = watchedObjectives.filter(
+                obj => obj.type === type.value
+              ).length;
               return (
                 <TabsTrigger
                   key={type.value}
@@ -262,7 +278,10 @@ export function ObjectivesStep({ onNext, onBack }: ObjectivesStepProps) {
           </TabsList>
 
           {typeOptions.map(type => {
-            const typeObjectives = watchedObjectives;
+            // Filter objectives by type
+            const typeObjectives = watchedObjectives.filter(
+              obj => obj.type === type.value
+            );
             const commonObjs =
               commonObjectives[type.value as keyof typeof commonObjectives] ||
               [];
@@ -331,6 +350,8 @@ export function ObjectivesStep({ onNext, onBack }: ObjectivesStepProps) {
                     {/* Added Objectives */}
                     <div className='space-y-4'>
                       {fields.map((field, index) => {
+                        if (watchedObjectives[index]?.type !== type.value)
+                          return null;
                         const priorityInfo = getPriorityInfo(
                           watchedObjectives[index]?.priority || 'medium'
                         );
@@ -513,7 +534,9 @@ export function ObjectivesStep({ onNext, onBack }: ObjectivesStepProps) {
             <CardContent>
               <div className='space-y-4'>
                 {typeOptions.map(type => {
-                  const objs = watchedObjectives;
+                  const objs = watchedObjectives.filter(
+                    obj => obj.type === type.value
+                  );
                   if (objs.length === 0) return null;
 
                   return (

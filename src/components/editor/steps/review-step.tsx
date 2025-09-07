@@ -210,12 +210,15 @@ export function ReviewStep({ onBack, onFinish }: ReviewStepProps) {
 
       {/* Document Preview */}
       <Tabs defaultValue='overview' className='w-full'>
-        <TabsList className='grid w-full grid-cols-5'>
+        <TabsList className='grid w-full grid-cols-4 lg:grid-cols-8'>
           <TabsTrigger value='overview'>Visão Geral</TabsTrigger>
           <TabsTrigger value='team'>Equipe</TabsTrigger>
           <TabsTrigger value='tech'>Tecnologias</TabsTrigger>
           <TabsTrigger value='objectives'>Objetivos</TabsTrigger>
           <TabsTrigger value='timeline'>Cronograma</TabsTrigger>
+          <TabsTrigger value='requirements'>Requisitos</TabsTrigger>
+          <TabsTrigger value='stakeholders'>Stakeholders</TabsTrigger>
+          <TabsTrigger value='payment'>Pagamento</TabsTrigger>
         </TabsList>
 
         <TabsContent value='overview' className='space-y-4'>
@@ -241,6 +244,20 @@ export function ReviewStep({ onBack, onFinish }: ReviewStepProps) {
               </div>
               <div className='grid grid-cols-2 gap-4'>
                 <div>
+                  <Label className='font-medium'>Empresa</Label>
+                  <p className='text-sm text-gray-600'>
+                    {project?.company_name || 'Não informada'}
+                  </p>
+                </div>
+                <div>
+                  <Label className='font-medium'>Tipo de Projeto</Label>
+                  <p className='text-sm text-gray-600'>
+                    {project?.project_type || 'Não definido'}
+                  </p>
+                </div>
+              </div>
+              <div className='grid grid-cols-2 gap-4'>
+                <div>
                   <Label className='font-medium'>Status</Label>
                   <p className='text-sm text-gray-600'>
                     {project?.status || 'Não definido'}
@@ -250,6 +267,52 @@ export function ReviewStep({ onBack, onFinish }: ReviewStepProps) {
                   <Label className='font-medium'>Versão</Label>
                   <p className='text-sm text-gray-600'>{watchedData.version}</p>
                 </div>
+              </div>
+              <div className='grid grid-cols-2 gap-4'>
+                <div>
+                  <Label className='font-medium'>Data de Início</Label>
+                  <p className='text-sm text-gray-600'>
+                    {project?.start_date
+                      ? format(parseISO(project.start_date), 'dd/MM/yyyy', {
+                          locale: ptBR,
+                        })
+                      : 'Não definida'}
+                  </p>
+                </div>
+                <div>
+                  <Label className='font-medium'>Data de Término</Label>
+                  <p className='text-sm text-gray-600'>
+                    {project?.end_date
+                      ? format(parseISO(project.end_date), 'dd/MM/yyyy', {
+                          locale: ptBR,
+                        })
+                      : 'Não definida'}
+                  </p>
+                </div>
+              </div>
+              <div>
+                <Label className='font-medium'>Metodologia</Label>
+                <p className='text-sm text-gray-600'>
+                  {project?.methodology || 'Não definida'}
+                </p>
+              </div>
+              <div>
+                <Label className='font-medium'>Arquitetura</Label>
+                <p className='text-sm text-gray-600'>
+                  {project?.architecture || 'Não definida'}
+                </p>
+              </div>
+              <div>
+                <Label className='font-medium'>Critérios de Sucesso</Label>
+                <p className='text-sm text-gray-600'>
+                  {project?.success_criteria || 'Não definidos'}
+                </p>
+              </div>
+              <div>
+                <Label className='font-medium'>Restrições</Label>
+                <p className='text-sm text-gray-600'>
+                  {project?.constraints || 'Não definidas'}
+                </p>
               </div>
             </CardContent>
           </Card>
@@ -264,9 +327,9 @@ export function ReviewStep({ onBack, onFinish }: ReviewStepProps) {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              {project?.team && project.team.length > 0 ? (
+              {project?.members && project.members.length > 0 ? (
                 <div className='space-y-2'>
-                  {project.team.map((member, index) => (
+                  {project.members.map((member, index) => (
                     <div
                       key={index}
                       className='flex items-center justify-between p-3 bg-gray-50 rounded-lg'
@@ -297,10 +360,48 @@ export function ReviewStep({ onBack, onFinish }: ReviewStepProps) {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className='text-center py-8 text-gray-500'>
-                <Code className='h-12 w-12 mx-auto mb-4 opacity-50' />
-                <p>Nenhuma tecnologia configurada</p>
-              </div>
+              {project?.technologies && project.technologies.length > 0 ? (
+                <div className='space-y-4'>
+                  <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4'>
+                    {project.technologies.map((tech, index) => (
+                      <div
+                        key={index}
+                        className='p-4 bg-gray-50 rounded-lg border'
+                      >
+                        <div className='flex items-center justify-between mb-2'>
+                          <h4 className='font-medium text-gray-900'>
+                            {tech.name}
+                          </h4>
+                          <Badge variant='outline'>
+                            {tech.category === 'frontend' && 'Frontend'}
+                            {tech.category === 'backend' && 'Backend'}
+                            {tech.category === 'database' && 'Database'}
+                            {tech.category === 'mobile' && 'Mobile'}
+                            {tech.category === 'devops' && 'DevOps'}
+                            {tech.category === 'other' && 'Outros'}
+                          </Badge>
+                        </div>
+                        {tech.version && (
+                          <p className='text-sm text-gray-600 mb-1'>
+                            <span className='font-medium'>Versão:</span>{' '}
+                            {tech.version}
+                          </p>
+                        )}
+                        {tech.description && (
+                          <p className='text-sm text-gray-600'>
+                            {tech.description}
+                          </p>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ) : (
+                <div className='text-center py-8 text-gray-500'>
+                  <Code className='h-12 w-12 mx-auto mb-4 opacity-50' />
+                  <p>Nenhuma tecnologia configurada</p>
+                </div>
+              )}
             </CardContent>
           </Card>
         </TabsContent>
@@ -314,10 +415,66 @@ export function ReviewStep({ onBack, onFinish }: ReviewStepProps) {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className='text-center py-8 text-gray-500'>
-                <Target className='h-12 w-12 mx-auto mb-4 opacity-50' />
-                <p>Nenhum objetivo configurado</p>
-              </div>
+              {project?.objectives && project.objectives.length > 0 ? (
+                <div className='space-y-4'>
+                  {project.objectives.map((objective, index) => (
+                    <div
+                      key={index}
+                      className='p-4 bg-gray-50 rounded-lg border'
+                    >
+                      <div className='flex items-center justify-between mb-2'>
+                        <h4 className='font-medium text-gray-900'>
+                          {objective.title}
+                        </h4>
+                        <div className='flex items-center gap-2'>
+                          <Badge
+                            variant={
+                              objective.priority === 'high'
+                                ? 'destructive'
+                                : objective.priority === 'medium'
+                                  ? 'default'
+                                  : 'secondary'
+                            }
+                          >
+                            {objective.priority === 'high' && 'Alta'}
+                            {objective.priority === 'medium' && 'Média'}
+                            {objective.priority === 'low' && 'Baixa'}
+                          </Badge>
+                          {objective.status && (
+                            <Badge variant='outline'>
+                              {objective.status === 'pending' && 'Pendente'}
+                              {objective.status === 'in_progress' &&
+                                'Em Progresso'}
+                              {objective.status === 'completed' && 'Concluído'}
+                            </Badge>
+                          )}
+                        </div>
+                      </div>
+                      {objective.description && (
+                        <p className='text-sm text-gray-600 mb-2'>
+                          {objective.description}
+                        </p>
+                      )}
+                      {objective.type && (
+                        <p className='text-xs text-gray-500'>
+                          <span className='font-medium'>Tipo:</span>
+                          {objective.type === 'business' && ' Negócio'}
+                          {objective.type === 'technical' && ' Técnico'}
+                          {objective.type === 'user' && ' Usuário'}
+                          {objective.type === 'performance' && ' Performance'}
+                          {objective.type === 'security' && ' Segurança'}
+                          {objective.type === 'other' && ' Outros'}
+                        </p>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className='text-center py-8 text-gray-500'>
+                  <Target className='h-12 w-12 mx-auto mb-4 opacity-50' />
+                  <p>Nenhum objetivo configurado</p>
+                </div>
+              )}
             </CardContent>
           </Card>
         </TabsContent>
@@ -331,9 +488,156 @@ export function ReviewStep({ onBack, onFinish }: ReviewStepProps) {
               </CardTitle>
             </CardHeader>
             <CardContent>
+              {project?.milestones && project.milestones.length > 0 ? (
+                <div className='space-y-4'>
+                  <div className='grid gap-4'>
+                    {project.milestones
+                      .sort(
+                        (a, b) =>
+                          new Date(a.due_date).getTime() -
+                          new Date(b.due_date).getTime()
+                      )
+                      .map((milestone, index) => (
+                        <div
+                          key={index}
+                          className='p-4 bg-gray-50 rounded-lg border relative'
+                        >
+                          <div className='flex items-center justify-between mb-2'>
+                            <h4 className='font-medium text-gray-900'>
+                              {milestone.title}
+                            </h4>
+                            <div className='flex items-center gap-2'>
+                              {milestone.type && (
+                                <Badge variant='outline'>
+                                  {milestone.type === 'planning' &&
+                                    'Planejamento'}
+                                  {milestone.type === 'development' &&
+                                    'Desenvolvimento'}
+                                  {milestone.type === 'testing' && 'Testes'}
+                                  {milestone.type === 'deployment' && 'Deploy'}
+                                  {milestone.type === 'review' && 'Revisão'}
+                                  {milestone.type === 'milestone' && 'Marco'}
+                                  {![
+                                    'planning',
+                                    'development',
+                                    'testing',
+                                    'deployment',
+                                    'review',
+                                    'milestone',
+                                  ].includes(milestone.type) && milestone.type}
+                                </Badge>
+                              )}
+                              <Badge
+                                variant={
+                                  milestone.status === 'completed'
+                                    ? 'default'
+                                    : milestone.status === 'in_progress'
+                                      ? 'secondary'
+                                      : 'outline'
+                                }
+                              >
+                                {milestone.status === 'pending' && 'Pendente'}
+                                {milestone.status === 'in_progress' &&
+                                  'Em Progresso'}
+                                {milestone.status === 'completed' &&
+                                  'Concluído'}
+                              </Badge>
+                            </div>
+                          </div>
+                          <div className='flex items-center gap-4 text-sm text-gray-600 mb-2'>
+                            <span className='flex items-center gap-1'>
+                              <Calendar className='h-4 w-4' />
+                              {format(
+                                parseISO(milestone.due_date),
+                                'dd/MM/yyyy',
+                                { locale: ptBR }
+                              )}
+                            </span>
+                          </div>
+                          {milestone.description && (
+                            <p className='text-sm text-gray-600'>
+                              {milestone.description}
+                            </p>
+                          )}
+                        </div>
+                      ))}
+                  </div>
+                </div>
+              ) : (
+                <div className='text-center py-8 text-gray-500'>
+                  <Calendar className='h-12 w-12 mx-auto mb-4 opacity-50' />
+                  <p>Nenhum cronograma configurado</p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value='requirements' className='space-y-4'>
+          <div className='grid gap-4'>
+            {/* Functional Requirements */}
+            <Card>
+              <CardHeader>
+                <CardTitle className='flex items-center'>
+                  <CheckCircle className='h-5 w-5 mr-2' />
+                  Requisitos Funcionais
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className='text-center py-8 text-gray-500'>
+                  <CheckCircle className='h-12 w-12 mx-auto mb-4 opacity-50' />
+                  <p>Nenhum requisito funcional configurado</p>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Non-Functional Requirements */}
+            <Card>
+              <CardHeader>
+                <CardTitle className='flex items-center'>
+                  <AlertCircle className='h-5 w-5 mr-2' />
+                  Requisitos Não Funcionais
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className='text-center py-8 text-gray-500'>
+                  <AlertCircle className='h-12 w-12 mx-auto mb-4 opacity-50' />
+                  <p>Nenhum requisito não funcional configurado</p>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </TabsContent>
+
+        <TabsContent value='stakeholders' className='space-y-4'>
+          <Card>
+            <CardHeader>
+              <CardTitle className='flex items-center'>
+                <Users className='h-5 w-5 mr-2' />
+                Stakeholders
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
               <div className='text-center py-8 text-gray-500'>
-                <Calendar className='h-12 w-12 mx-auto mb-4 opacity-50' />
-                <p>Nenhum cronograma configurado</p>
+                <Users className='h-12 w-12 mx-auto mb-4 opacity-50' />
+                <p>Nenhum stakeholder configurado</p>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value='payment' className='space-y-4'>
+          <Card>
+            <CardHeader>
+              <CardTitle className='flex items-center'>
+                <FileText className='h-5 w-5 mr-2' />
+                Informações de Pagamento
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className='text-center py-8 text-gray-500'>
+                <FileText className='h-12 w-12 mx-auto mb-4 opacity-50' />
+                <p>Nenhuma informação de pagamento configurada</p>
               </div>
             </CardContent>
           </Card>

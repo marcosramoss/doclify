@@ -28,12 +28,7 @@ export const useProjects = () => {
 
       const { data, error } = await supabase
         .from('projects')
-        .select(
-          `
-          *,
-          team(*)
-        `
-        )
+        .select('*')
         .eq('user_id', user.id)
         .order('created_at', { ascending: false });
 
@@ -266,6 +261,7 @@ export const useCreateTechnologies = () => {
             name: tech.name,
             category: tech.category,
             version: tech.version,
+            description: tech.description,
           }))
         )
         .select();
@@ -315,5 +311,77 @@ export const useCreateObjectives = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['objectives'] });
     },
+  });
+};
+
+// Hook to fetch team members by project ID
+export const useTeamMembers = (projectId: string) => {
+  const { user } = useAuth();
+
+  return useQuery({
+    queryKey: ['team', projectId],
+    queryFn: async () => {
+      if (!user) throw new Error('User not authenticated');
+
+      const { data, error } = await supabase
+        .from('team')
+        .select('*')
+        .eq('project_id', projectId);
+
+      if (error) {
+        throw error;
+      }
+
+      return data as TeamMember[];
+    },
+    enabled: !!user && !!projectId,
+  });
+};
+
+// Hook to fetch technologies by project ID
+export const useTechnologies = (projectId: string) => {
+  const { user } = useAuth();
+
+  return useQuery({
+    queryKey: ['technologies', projectId],
+    queryFn: async () => {
+      if (!user) throw new Error('User not authenticated');
+
+      const { data, error } = await supabase
+        .from('technologies')
+        .select('*')
+        .eq('project_id', projectId);
+
+      if (error) {
+        throw error;
+      }
+
+      return data as Technology[];
+    },
+    enabled: !!user && !!projectId,
+  });
+};
+
+// Hook to fetch objectives by project ID
+export const useObjectives = (projectId: string) => {
+  const { user } = useAuth();
+
+  return useQuery({
+    queryKey: ['objectives', projectId],
+    queryFn: async () => {
+      if (!user) throw new Error('User not authenticated');
+
+      const { data, error } = await supabase
+        .from('objectives')
+        .select('*')
+        .eq('project_id', projectId);
+
+      if (error) {
+        throw error;
+      }
+
+      return data as Objective[];
+    },
+    enabled: !!user && !!projectId,
   });
 };

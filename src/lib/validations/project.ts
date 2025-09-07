@@ -64,8 +64,11 @@ export const audiencesSchema = z.object({
 
 export const objectiveSchema = z.object({
   title: z.string().min(1, 'Título do objetivo é obrigatório'),
-  description: z.string().min(1, 'Descrição do objetivo é obrigatória'),
+  description: z.string().optional(),
   priority: z.enum(['high', 'medium', 'low']),
+  type: z
+    .enum(['business', 'technical', 'user', 'performance', 'security', 'other'])
+    .optional(),
 });
 
 export const objectivesSchema = z.object({

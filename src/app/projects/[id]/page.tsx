@@ -19,10 +19,15 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { AppLayout } from '@/components/layout/app-layout';
-import { useProject } from '@/hooks/useProjects';
+import {
+  useProject,
+  useTeamMembers,
+  useTechnologies,
+  useObjectives,
+} from '@/hooks/useProjects';
 import { formatDate } from '@/utils/format';
 import { exportToPDF } from '@/utils/export';
-import type { Project, Technology, Objective } from '@/types';
+import type { Project, Technology, Objective, TeamMember } from '@/types';
 
 // Extended project type for display
 interface ExtendedProject extends Project {
@@ -50,6 +55,12 @@ export default function ProjectDetailsPage() {
   const projectId = params.id as string;
 
   const { data: project, isLoading, error } = useProject(projectId);
+  const { data: teamMembers, isLoading: isLoadingTeam } =
+    useTeamMembers(projectId);
+  const { data: technologies, isLoading: isLoadingTech } =
+    useTechnologies(projectId);
+  const { data: objectives, isLoading: isLoadingObjectives } =
+    useObjectives(projectId);
 
   const handleExportPDF = async () => {
     if (!project) return;
@@ -78,7 +89,10 @@ export default function ProjectDetailsPage() {
     }
   };
 
-  if (isLoading) {
+  const isLoadingAny =
+    isLoading || isLoadingTeam || isLoadingTech || isLoadingObjectives;
+
+  if (isLoadingAny) {
     return (
       <AppLayout>
         <div className='flex items-center justify-center h-64'>
@@ -179,19 +193,19 @@ export default function ProjectDetailsPage() {
             </Card>
 
             {/* Team */}
-            {project.team && project.team.length > 0 && (
+            {teamMembers && teamMembers.length > 0 && (
               <Card>
                 <CardHeader>
                   <CardTitle className='flex items-center'>
                     <Users className='h-5 w-5 mr-2' />
-                    Equipe ({project.team.length})
+                    Equipe ({teamMembers.length})
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
-                    {project.team.map((member, index) => (
+                    {teamMembers.map((member, index) => (
                       <div
-                        key={index}
+                        key={member.id || index}
                         className='flex items-center space-x-3 p-3 bg-gray-50 rounded-lg'
                       >
                         <div className='h-10 w-10 bg-blue-100 rounded-full flex items-center justify-center'>
@@ -202,6 +216,11 @@ export default function ProjectDetailsPage() {
                         <div>
                           <p className='font-medium'>{member.name}</p>
                           <p className='text-sm text-gray-500'>{member.role}</p>
+                          {member.email && (
+                            <p className='text-xs text-gray-400'>
+                              {member.email}
+                            </p>
+                          )}
                         </div>
                       </div>
                     ))}
@@ -211,68 +230,114 @@ export default function ProjectDetailsPage() {
             )}
 
             {/* Technologies */}
-            {(() => {
-              const extendedProject = project as ExtendedProject;
-              return (
-                extendedProject.technologies &&
-                extendedProject.technologies.length > 0 && (
-                  <Card>
-                    <CardHeader>
-                      <CardTitle className='flex items-center'>
-                        <Tag className='h-5 w-5 mr-2' />
-                        Tecnologias
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <div className='flex flex-wrap gap-2'>
-                        {extendedProject.technologies.map((tech, index) => (
-                          <Badge key={index} variant='outline'>
-                            {tech.name}
-                          </Badge>
-                        ))}
+            {technologies && technologies.length > 0 && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className='flex items-center'>
+                    <Tag className='h-5 w-5 mr-2' />
+                    Tecnologias ({technologies.length})
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className='space-y-4'>
+                    {Object.entries(
+                      technologies.reduce(
+                        (acc, tech) => {
+                          if (!acc[tech.category]) acc[tech.category] = [];
+                          acc[tech.category].push(tech);
+                          return acc;
+                        },
+                        {} as Record<string, Technology[]>
+                      )
+                    ).map(([category, techs]) => (
+                      <div key={category}>
+                        <h4 className='font-medium text-sm text-gray-700 mb-2 capitalize'>
+                          {category === 'frontend'
+                            ? 'Frontend'
+                            : category === 'backend'
+                              ? 'Backend'
+                              : category === 'database'
+                                ? 'Banco de Dados'
+                                : category === 'mobile'
+                                  ? 'Mobile'
+                                  : category === 'devops'
+                                    ? 'DevOps'
+                                    : 'Outros'}
+                        </h4>
+                        <div className='flex flex-wrap gap-2'>
+                          {techs.map((tech, index) => (
+                            <Badge
+                              key={tech.id || index}
+                              variant='outline'
+                              className='text-xs'
+                            >
+                              {tech.name}
+                              {tech.version && (
+                                <span className='ml-1 text-gray-500'>
+                                  v{tech.version}
+                                </span>
+                              )}
+                            </Badge>
+                          ))}
+                        </div>
                       </div>
-                    </CardContent>
-                  </Card>
-                )
-              );
-            })()}
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
 
             {/* Objectives */}
-            {(() => {
-              const extendedProject = project as ExtendedProject;
-              return (
-                extendedProject.objectives &&
-                extendedProject.objectives.length > 0 && (
-                  <Card>
-                    <CardHeader>
-                      <CardTitle className='flex items-center'>
-                        <Target className='h-5 w-5 mr-2' />
-                        Objetivos
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <div className='space-y-3'>
-                        {extendedProject.objectives.map((objective, index) => (
-                          <div
-                            key={index}
-                            className='p-3 bg-gray-50 rounded-lg'
-                          >
-                            <h4 className='font-medium mb-1'>
+            {objectives && objectives.length > 0 && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className='flex items-center'>
+                    <Target className='h-5 w-5 mr-2' />
+                    Objetivos ({objectives.length})
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className='space-y-3'>
+                    {objectives.map((objective, index) => {
+                      const priorityColors = {
+                        high: 'bg-red-100 text-red-800',
+                        medium: 'bg-yellow-100 text-yellow-800',
+                        low: 'bg-green-100 text-green-800',
+                      };
+                      const priorityLabels = {
+                        high: 'Alta',
+                        medium: 'Média',
+                        low: 'Baixa',
+                      };
+
+                      return (
+                        <div
+                          key={objective.id || index}
+                          className='p-4 bg-gray-50 rounded-lg border-l-4 border-blue-500'
+                        >
+                          <div className='flex items-start justify-between mb-2'>
+                            <h4 className='font-medium text-gray-900'>
                               {objective.title}
                             </h4>
-                            {objective.description && (
-                              <p className='text-sm text-gray-600'>
-                                {objective.description}
-                              </p>
-                            )}
+                            <Badge
+                              variant='secondary'
+                              className={`text-xs ${priorityColors[objective.priority]}`}
+                            >
+                              {priorityLabels[objective.priority]}
+                            </Badge>
                           </div>
-                        ))}
-                      </div>
-                    </CardContent>
-                  </Card>
-                )
-              );
-            })()}
+                          {objective.description && (
+                            <p className='text-sm text-gray-600 mt-2'>
+                              {objective.description}
+                            </p>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
           </div>
 
           {/* Sidebar */}
@@ -325,14 +390,38 @@ export default function ProjectDetailsPage() {
                   </p>
                 </div>
 
-                {project.team && project.team.length > 0 && (
+                {teamMembers && teamMembers.length > 0 && (
                   <div>
                     <label className='text-sm font-medium text-gray-500'>
                       Membros da equipe
                     </label>
                     <p className='mt-1 text-sm'>
-                      {project.team.length} membro
-                      {project.team.length > 1 ? 's' : ''}
+                      {teamMembers.length} membro
+                      {teamMembers.length > 1 ? 's' : ''}
+                    </p>
+                  </div>
+                )}
+
+                {technologies && technologies.length > 0 && (
+                  <div>
+                    <label className='text-sm font-medium text-gray-500'>
+                      Tecnologias
+                    </label>
+                    <p className='mt-1 text-sm'>
+                      {technologies.length} tecnologia
+                      {technologies.length > 1 ? 's' : ''}
+                    </p>
+                  </div>
+                )}
+
+                {objectives && objectives.length > 0 && (
+                  <div>
+                    <label className='text-sm font-medium text-gray-500'>
+                      Objetivos
+                    </label>
+                    <p className='mt-1 text-sm'>
+                      {objectives.length} objetivo
+                      {objectives.length > 1 ? 's' : ''}
                     </p>
                   </div>
                 )}

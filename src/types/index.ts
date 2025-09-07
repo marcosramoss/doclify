@@ -63,8 +63,15 @@ export interface Objective {
   id?: string;
   project_id?: string;
   title: string;
-  description: string;
+  description?: string;
   priority: 'high' | 'medium' | 'low';
+  type?:
+    | 'business'
+    | 'technical'
+    | 'user'
+    | 'performance'
+    | 'security'
+    | 'other';
   status?: 'pending' | 'in_progress' | 'completed';
   created_at?: string;
 }
@@ -152,6 +159,7 @@ export interface TechnologyFormData {
     name: string;
     category: Technology['category'];
     version?: string;
+    description?: string;
   }[];
 }
 

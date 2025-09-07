@@ -124,15 +124,15 @@ export default function NewProjectPage() {
 
       // 2. Save team members if they exist
       if (
-        currentProject.team &&
-        Array.isArray(currentProject.team) &&
-        currentProject.team.length > 0
+        currentProject.members &&
+        Array.isArray(currentProject.members) &&
+        currentProject.members.length > 0
       ) {
         try {
-          console.log('Saving team members:', currentProject.team);
+          console.log('Saving team members:', currentProject.members);
           await createTeamMembers.mutateAsync({
             projectId: project.id,
-            members: currentProject.team,
+            members: currentProject.members,
           });
           console.log('Team members saved successfully');
         } catch (error) {
@@ -171,7 +171,11 @@ export default function NewProjectPage() {
           console.log('Saving objectives:', extendedProject.objectives);
           await createObjectives.mutateAsync({
             projectId: project.id,
-            objectives: extendedProject.objectives,
+            objectives: extendedProject.objectives.map(obj => ({
+              title: obj.title,
+              description: obj.description || '',
+              priority: obj.priority,
+            })),
           });
           console.log('Technologies saved successfully');
         } catch (error) {

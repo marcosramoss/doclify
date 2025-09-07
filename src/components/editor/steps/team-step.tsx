@@ -30,9 +30,13 @@ interface TeamStepProps {
 }
 
 const roleOptions = [
+  { value: 'front_end_developer', label: 'Front-end Developer' },
+  { value: 'back_end_developer', label: 'Back-end Developer' },
+  { value: 'full_stack_developer', label: 'Full-stack Developer' },
+  { value: 'mobile_developer', label: 'Mobile Developer' },
+  { value: 'database_administrator', label: 'Database Administrator' },
   { value: 'project_manager', label: 'Gerente de Projeto' },
   { value: 'tech_lead', label: 'Tech Lead' },
-  { value: 'developer', label: 'Desenvolvedor' },
   { value: 'designer', label: 'Designer' },
   { value: 'analyst', label: 'Analista' },
   { value: 'qa', label: 'QA/Tester' },

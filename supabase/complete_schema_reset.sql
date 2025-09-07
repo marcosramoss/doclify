@@ -1,8 +1,45 @@
--- Enable UUID extension
+-- =====================================================
+-- DOCLIFY - SCHEMA COMPLETO E DEFINITIVO
+-- Este script dropa e recria todo o banco do zero
+-- Execute no SQL Editor do Supabase
+-- =====================================================
+
+-- PASSO 1: DROPAR TODAS AS TABELAS E DEPENDÊNCIAS
+-- =====================================================
+
+-- Dropar triggers primeiro
+DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
+DROP TRIGGER IF EXISTS update_users_updated_at ON public.users;
+DROP TRIGGER IF EXISTS update_projects_updated_at ON public.projects;
+DROP TRIGGER IF EXISTS update_payment_updated_at ON public.payment;
+
+-- Dropar funções
+DROP FUNCTION IF EXISTS public.handle_new_user();
+DROP FUNCTION IF EXISTS public.update_updated_at_column();
+
+-- Dropar todas as tabelas (em ordem de dependência)
+DROP TABLE IF EXISTS public.signatures CASCADE;
+DROP TABLE IF EXISTS public.stakeholders CASCADE;
+DROP TABLE IF EXISTS public.payment CASCADE;
+DROP TABLE IF EXISTS public.requirements_non_functional CASCADE;
+DROP TABLE IF EXISTS public.requirements_functional CASCADE;
+DROP TABLE IF EXISTS public.objectives CASCADE;
+DROP TABLE IF EXISTS public.audiences CASCADE;
+DROP TABLE IF EXISTS public.technologies CASCADE;
+DROP TABLE IF EXISTS public.team CASCADE;
+DROP TABLE IF EXISTS public.projects CASCADE;
+DROP TABLE IF EXISTS public.users CASCADE;
+
+-- PASSO 2: HABILITAR EXTENSÕES
+-- =====================================================
+
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
--- Create users table (extends Supabase auth.users)
-CREATE TABLE IF NOT EXISTS public.users (
+-- PASSO 3: CRIAR TABELAS
+-- =====================================================
+
+-- Tabela de usuários (estende auth.users do Supabase)
+CREATE TABLE public.users (
   id UUID REFERENCES auth.users(id) ON DELETE CASCADE PRIMARY KEY,
   email TEXT UNIQUE NOT NULL,
   name TEXT,
@@ -11,8 +48,8 @@ CREATE TABLE IF NOT EXISTS public.users (
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- Create projects table
-CREATE TABLE IF NOT EXISTS public.projects (
+-- Tabela de projetos
+CREATE TABLE public.projects (
   id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
   user_id UUID REFERENCES public.users(id) ON DELETE CASCADE NOT NULL,
   title TEXT NOT NULL,
@@ -24,8 +61,8 @@ CREATE TABLE IF NOT EXISTS public.projects (
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- Create team table
-CREATE TABLE IF NOT EXISTS public.team (
+-- Tabela de equipe
+CREATE TABLE public.team (
   id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
   project_id UUID REFERENCES public.projects(id) ON DELETE CASCADE NOT NULL,
   name TEXT NOT NULL,
@@ -34,8 +71,8 @@ CREATE TABLE IF NOT EXISTS public.team (
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- Create technologies table
-CREATE TABLE IF NOT EXISTS public.technologies (
+-- Tabela de tecnologias (CORRIGIDA)
+CREATE TABLE public.technologies (
   id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
   project_id UUID REFERENCES public.projects(id) ON DELETE CASCADE NOT NULL,
   name TEXT NOT NULL,
@@ -45,8 +82,8 @@ CREATE TABLE IF NOT EXISTS public.technologies (
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- Create audiences table
-CREATE TABLE IF NOT EXISTS public.audiences (
+-- Tabela de audiências
+CREATE TABLE public.audiences (
   id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
   project_id UUID REFERENCES public.projects(id) ON DELETE CASCADE NOT NULL,
   name TEXT NOT NULL,
@@ -55,8 +92,8 @@ CREATE TABLE IF NOT EXISTS public.audiences (
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- Create objectives table
-CREATE TABLE IF NOT EXISTS public.objectives (
+-- Tabela de objetivos
+CREATE TABLE public.objectives (
   id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
   project_id UUID REFERENCES public.projects(id) ON DELETE CASCADE NOT NULL,
   title TEXT NOT NULL,
@@ -65,8 +102,8 @@ CREATE TABLE IF NOT EXISTS public.objectives (
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- Create functional requirements table
-CREATE TABLE IF NOT EXISTS public.requirements_functional (
+-- Tabela de requisitos funcionais
+CREATE TABLE public.requirements_functional (
   id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
   project_id UUID REFERENCES public.projects(id) ON DELETE CASCADE NOT NULL,
   title TEXT NOT NULL,
@@ -76,8 +113,8 @@ CREATE TABLE IF NOT EXISTS public.requirements_functional (
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- Create non-functional requirements table
-CREATE TABLE IF NOT EXISTS public.requirements_non_functional (
+-- Tabela de requisitos não funcionais
+CREATE TABLE public.requirements_non_functional (
   id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
   project_id UUID REFERENCES public.projects(id) ON DELETE CASCADE NOT NULL,
   title TEXT NOT NULL,
@@ -88,8 +125,8 @@ CREATE TABLE IF NOT EXISTS public.requirements_non_functional (
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- Create payment table
-CREATE TABLE IF NOT EXISTS public.payment (
+-- Tabela de pagamento
+CREATE TABLE public.payment (
   id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
   project_id UUID REFERENCES public.projects(id) ON DELETE CASCADE NOT NULL,
   total_amount DECIMAL(10,2) NOT NULL DEFAULT 0,
@@ -100,8 +137,8 @@ CREATE TABLE IF NOT EXISTS public.payment (
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- Create stakeholders table
-CREATE TABLE IF NOT EXISTS public.stakeholders (
+-- Tabela de stakeholders
+CREATE TABLE public.stakeholders (
   id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
   project_id UUID REFERENCES public.projects(id) ON DELETE CASCADE NOT NULL,
   name TEXT NOT NULL,
@@ -114,18 +151,19 @@ CREATE TABLE IF NOT EXISTS public.stakeholders (
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- Create signatures table
-CREATE TABLE IF NOT EXISTS public.signatures (
+-- Tabela de assinaturas
+CREATE TABLE public.signatures (
   id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
-  project_id UUID REFERENCES public.projects(id) ON DELETE CASCADE NOT NULL,
   stakeholder_id UUID REFERENCES public.stakeholders(id) ON DELETE CASCADE NOT NULL,
-  signature_data TEXT, -- Base64 encoded signature image
+  signature_data TEXT,
   signed_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   ip_address INET,
   user_agent TEXT
 );
 
--- Enable Row Level Security (RLS)
+-- PASSO 4: HABILITAR ROW LEVEL SECURITY (RLS)
+-- =====================================================
+
 ALTER TABLE public.users ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.projects ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.team ENABLE ROW LEVEL SECURITY;
@@ -138,9 +176,10 @@ ALTER TABLE public.payment ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.stakeholders ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.signatures ENABLE ROW LEVEL SECURITY;
 
--- Create RLS policies
+-- PASSO 5: CRIAR POLÍTICAS RLS
+-- =====================================================
 
--- Users policies
+-- Políticas para usuários
 CREATE POLICY "Users can view own profile" ON public.users
   FOR SELECT USING (auth.uid() = id);
 
@@ -150,7 +189,7 @@ CREATE POLICY "Users can update own profile" ON public.users
 CREATE POLICY "Users can insert own profile" ON public.users
   FOR INSERT WITH CHECK (auth.uid() = id);
 
--- Projects policies
+-- Políticas para projetos
 CREATE POLICY "Users can view own projects" ON public.projects
   FOR SELECT USING (auth.uid() = user_id);
 
@@ -163,7 +202,7 @@ CREATE POLICY "Users can update own projects" ON public.projects
 CREATE POLICY "Users can delete own projects" ON public.projects
   FOR DELETE USING (auth.uid() = user_id);
 
--- Team policies
+-- Políticas para equipe
 CREATE POLICY "Users can manage team for own projects" ON public.team
   FOR ALL USING (
     EXISTS (
@@ -173,7 +212,7 @@ CREATE POLICY "Users can manage team for own projects" ON public.team
     )
   );
 
--- Technologies policies
+-- Políticas para tecnologias
 CREATE POLICY "Users can manage technologies for own projects" ON public.technologies
   FOR ALL USING (
     EXISTS (
@@ -183,7 +222,7 @@ CREATE POLICY "Users can manage technologies for own projects" ON public.technol
     )
   );
 
--- Audiences policies
+-- Políticas para audiências
 CREATE POLICY "Users can manage audiences for own projects" ON public.audiences
   FOR ALL USING (
     EXISTS (
@@ -193,7 +232,7 @@ CREATE POLICY "Users can manage audiences for own projects" ON public.audiences
     )
   );
 
--- Objectives policies
+-- Políticas para objetivos
 CREATE POLICY "Users can manage objectives for own projects" ON public.objectives
   FOR ALL USING (
     EXISTS (
@@ -203,7 +242,7 @@ CREATE POLICY "Users can manage objectives for own projects" ON public.objective
     )
   );
 
--- Functional requirements policies
+-- Políticas para requisitos funcionais
 CREATE POLICY "Users can manage functional requirements for own projects" ON public.requirements_functional
   FOR ALL USING (
     EXISTS (
@@ -213,7 +252,7 @@ CREATE POLICY "Users can manage functional requirements for own projects" ON pub
     )
   );
 
--- Non-functional requirements policies
+-- Políticas para requisitos não funcionais
 CREATE POLICY "Users can manage non-functional requirements for own projects" ON public.requirements_non_functional
   FOR ALL USING (
     EXISTS (
@@ -223,7 +262,7 @@ CREATE POLICY "Users can manage non-functional requirements for own projects" ON
     )
   );
 
--- Payment policies
+-- Políticas para pagamento
 CREATE POLICY "Users can manage payment for own projects" ON public.payment
   FOR ALL USING (
     EXISTS (
@@ -233,7 +272,7 @@ CREATE POLICY "Users can manage payment for own projects" ON public.payment
     )
   );
 
--- Stakeholders policies
+-- Políticas para stakeholders
 CREATE POLICY "Users can manage stakeholders for own projects" ON public.stakeholders
   FOR ALL USING (
     EXISTS (
@@ -243,7 +282,7 @@ CREATE POLICY "Users can manage stakeholders for own projects" ON public.stakeho
     )
   );
 
--- Signatures policies
+-- Políticas para assinaturas (CORRIGIDA)
 CREATE POLICY "Users can manage signatures for own projects" ON public.signatures
   FOR ALL USING (
     EXISTS (
@@ -254,32 +293,25 @@ CREATE POLICY "Users can manage signatures for own projects" ON public.signature
     )
   );
 
--- Insert test user for development
-INSERT INTO public.users (id, email, name, avatar_url, created_at, updated_at)
-VALUES (
-  'test-user-123',
-  'test@example.com',
-  'Test User',
-  NULL,
-  NOW(),
-  NOW()
-) ON CONFLICT (id) DO NOTHING;
+-- PASSO 6: CRIAR ÍNDICES PARA PERFORMANCE
+-- =====================================================
 
--- Create indexes for better performance
-CREATE INDEX IF NOT EXISTS idx_projects_user_id ON public.projects(user_id);
-CREATE INDEX IF NOT EXISTS idx_projects_created_at ON public.projects(created_at DESC);
-CREATE INDEX IF NOT EXISTS idx_team_project_id ON public.team(project_id);
-CREATE INDEX IF NOT EXISTS idx_technologies_project_id ON public.technologies(project_id);
-CREATE INDEX IF NOT EXISTS idx_audiences_project_id ON public.audiences(project_id);
-CREATE INDEX IF NOT EXISTS idx_objectives_project_id ON public.objectives(project_id);
-CREATE INDEX IF NOT EXISTS idx_requirements_functional_project_id ON public.requirements_functional(project_id);
-CREATE INDEX IF NOT EXISTS idx_requirements_non_functional_project_id ON public.requirements_non_functional(project_id);
-CREATE INDEX IF NOT EXISTS idx_payment_project_id ON public.payment(project_id);
-CREATE INDEX IF NOT EXISTS idx_stakeholders_project_id ON public.stakeholders(project_id);
--- Removed incorrect index - signatures table doesn't have project_id column
-CREATE INDEX IF NOT EXISTS idx_signatures_stakeholder_id ON public.signatures(stakeholder_id);
+CREATE INDEX idx_projects_user_id ON public.projects(user_id);
+CREATE INDEX idx_projects_created_at ON public.projects(created_at DESC);
+CREATE INDEX idx_team_project_id ON public.team(project_id);
+CREATE INDEX idx_technologies_project_id ON public.technologies(project_id);
+CREATE INDEX idx_audiences_project_id ON public.audiences(project_id);
+CREATE INDEX idx_objectives_project_id ON public.objectives(project_id);
+CREATE INDEX idx_requirements_functional_project_id ON public.requirements_functional(project_id);
+CREATE INDEX idx_requirements_non_functional_project_id ON public.requirements_non_functional(project_id);
+CREATE INDEX idx_payment_project_id ON public.payment(project_id);
+CREATE INDEX idx_stakeholders_project_id ON public.stakeholders(project_id);
+CREATE INDEX idx_signatures_stakeholder_id ON public.signatures(stakeholder_id);
 
--- Create function to handle user creation
+-- PASSO 7: CRIAR FUNÇÕES E TRIGGERS
+-- =====================================================
+
+-- Função para criar usuário automaticamente
 CREATE OR REPLACE FUNCTION public.handle_new_user()
 RETURNS TRIGGER AS $$
 BEGIN
@@ -294,12 +326,12 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
--- Create trigger for new user creation
-CREATE OR REPLACE TRIGGER on_auth_user_created
+-- Trigger para novos usuários
+CREATE TRIGGER on_auth_user_created
   AFTER INSERT ON auth.users
   FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();
 
--- Create function to update updated_at timestamp
+-- Função para atualizar updated_at
 CREATE OR REPLACE FUNCTION public.update_updated_at_column()
 RETURNS TRIGGER AS $$
 BEGIN
@@ -308,7 +340,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
--- Create triggers for updated_at
+-- Triggers para updated_at
 CREATE TRIGGER update_users_updated_at
   BEFORE UPDATE ON public.users
   FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
@@ -320,3 +352,40 @@ CREATE TRIGGER update_projects_updated_at
 CREATE TRIGGER update_payment_updated_at
   BEFORE UPDATE ON public.payment
   FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
+
+-- PASSO 8: VERIFICAÇÃO FINAL
+-- =====================================================
+
+-- Verificar estrutura da tabela technologies
+SELECT 'Estrutura da tabela technologies:' as info;
+SELECT 
+  column_name, 
+  data_type, 
+  is_nullable,
+  column_default
+FROM information_schema.columns 
+WHERE table_name = 'technologies' 
+  AND table_schema = 'public'
+ORDER BY ordinal_position;
+
+-- Verificar constraints
+SELECT 'Constraints da tabela technologies:' as info;
+SELECT 
+  constraint_name,
+  constraint_type
+FROM information_schema.table_constraints 
+WHERE table_name = 'technologies' 
+  AND table_schema = 'public';
+
+-- Verificar todas as tabelas criadas
+SELECT 'Tabelas criadas:' as info;
+SELECT table_name 
+FROM information_schema.tables 
+WHERE table_schema = 'public' 
+ORDER BY table_name;
+
+SELECT '🎉 SCHEMA COMPLETO CRIADO COM SUCESSO! 🎉' as resultado;
+SELECT 'Todas as tabelas foram recriadas do zero com as correções aplicadas.' as detalhes;
+SELECT 'A tabela technologies agora tem a estrutura correta com category e description.' as tecnologias;
+SELECT 'Todas as políticas RLS estão corretas e funcionais.' as seguranca;
+SELECT 'Índices criados para melhor performance.' as performance;

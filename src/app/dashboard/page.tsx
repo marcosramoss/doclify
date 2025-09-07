@@ -278,11 +278,11 @@ export default function DashboardPage() {
                         <Calendar className='h-4 w-4 mr-1' />
                         {formatDate(project.created_at)}
                       </div>
-                      {project.team && project.team.length > 0 && (
-                        <div className='flex items-center'>
+                      {project.members && project.members.length > 0 && (
+                        <div className='flex items-center text-sm text-gray-600'>
                           <Users className='h-4 w-4 mr-1' />
-                          {project.team.length} membro
-                          {project.team.length > 1 ? 's' : ''}
+                          {project.members.length} membro
+                          {project.members.length > 1 ? 's' : ''}
                         </div>
                       )}
                     </div>

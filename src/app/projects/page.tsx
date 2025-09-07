@@ -223,11 +223,11 @@ export default function ProjectsPage() {
                       </Badge>
                     </TableCell>
                     <TableCell>
-                      {project.team && project.team.length > 0 ? (
-                        <div className='flex items-center'>
-                          <Users className='h-4 w-4 mr-1 text-gray-400' />
-                          {project.team.length} membro
-                          {project.team.length > 1 ? 's' : ''}
+                      {project.members && project.members.length > 0 ? (
+                        <div className='flex items-center text-sm text-gray-600'>
+                          <Users className='h-4 w-4 mr-1' />
+                          {project.members.length} membro
+                          {project.members.length > 1 ? 's' : ''}
                         </div>
                       ) : (
                         <span className='text-gray-400'>-</span>
