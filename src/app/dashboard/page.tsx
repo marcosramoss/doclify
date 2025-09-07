@@ -10,9 +10,11 @@ import {
   FileText,
   Calendar,
   Users,
+  Trash2,
 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import { toast } from 'sonner';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -28,8 +30,19 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { AppLayout } from '@/components/layout/app-layout';
 import { useProjects } from '@/hooks/useProjects';
 import { formatDate } from '@/utils/format';
@@ -50,7 +63,9 @@ const statusLabels = {
 
 export default function DashboardPage() {
   const [searchTerm, setSearchTerm] = useState('');
-  const { projects, isLoading, error } = useProjects();
+  const [deleteProjectId, setDeleteProjectId] = useState<string | null>(null);
+  const { projects, isLoading, error, deleteProject, isDeleting } =
+    useProjects();
 
   const filteredProjects =
     projects?.filter(
@@ -64,6 +79,18 @@ export default function DashboardPage() {
     draft: projects?.filter(p => p.status === 'draft').length || 0,
     in_progress: projects?.filter(p => p.status === 'in_progress').length || 0,
     completed: projects?.filter(p => p.status === 'completed').length || 0,
+  };
+
+  const handleDeleteProject = async () => {
+    if (!deleteProjectId) return;
+
+    try {
+      await deleteProject(deleteProjectId);
+      toast.success('Projeto excluído com sucesso!');
+      setDeleteProjectId(null);
+    } catch (error) {
+      toast.error('Erro ao excluir projeto');
+    }
   };
 
   if (isLoading) {
@@ -240,7 +267,12 @@ export default function DashboardPage() {
                             Ver Detalhes
                           </Link>
                         </DropdownMenuItem>
-                        <DropdownMenuItem className='text-red-600'>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem
+                          className='text-red-600 focus:text-red-600'
+                          onClick={() => setDeleteProjectId(project.id)}
+                        >
+                          <Trash2 className='h-4 w-4 mr-2' />
                           Excluir
                         </DropdownMenuItem>
                       </DropdownMenuContent>
@@ -293,6 +325,32 @@ export default function DashboardPage() {
           </div>
         )}
       </div>
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog
+        open={!!deleteProjectId}
+        onOpenChange={() => setDeleteProjectId(null)}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Excluir Projeto</AlertDialogTitle>
+            <AlertDialogDescription>
+              Tem certeza que deseja excluir este projeto? Esta ação não pode
+              ser desfeita.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteProject}
+              className='bg-red-600 hover:bg-red-700'
+              disabled={isDeleting}
+            >
+              {isDeleting ? 'Excluindo...' : 'Excluir'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </AppLayout>
   );
 }
