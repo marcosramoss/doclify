@@ -11,6 +11,9 @@ import {
   Calendar,
   Users,
   Trash2,
+  Download,
+  Edit,
+  Eye,
 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -46,6 +49,19 @@ import {
 import { AppLayout } from '@/components/layout/app-layout';
 import { useProjects } from '@/hooks/useProjects';
 import { formatDate } from '@/utils/format';
+import { exportToPDF, generateDocumentHTML } from '@/utils/export';
+import { supabase } from '@/lib/supabase/client';
+import {
+  Project,
+  TeamMember,
+  Technology,
+  Objective,
+  Milestone,
+  FunctionalRequirement,
+  NonFunctionalRequirement,
+  Audience,
+  Stakeholder,
+} from '@/types';
 
 const statusColors = {
   draft: 'bg-gray-100 text-gray-800',
@@ -90,6 +106,161 @@ export default function DashboardPage() {
       setDeleteProjectId(null);
     } catch (error) {
       toast.error('Erro ao excluir projeto');
+    }
+  };
+
+  const handleExportPDF = async (project: Project) => {
+    try {
+      console.log('Iniciando exportação de PDF para projeto:', project.title);
+
+      // Load all related data for the project using Supabase directly
+      console.log('Carregando dados relacionados do projeto...');
+
+      // Load payment info separately to handle potential errors
+      let paymentData = null;
+      try {
+        const { data } = await supabase
+          .from('payment')
+          .select('*')
+          .eq('project_id', project.id)
+          .single();
+        paymentData = data;
+      } catch (error) {
+        console.log('No payment info found for project:', project.id);
+      }
+
+      const [
+        teamData,
+        techData,
+        objectivesData,
+        milestonesData,
+        functionalReqData,
+        nonFunctionalReqData,
+        audiencesData,
+        stakeholdersData,
+      ] = await Promise.all([
+        // Team members
+        supabase
+          .from('team')
+          .select('*')
+          .eq('project_id', project.id)
+          .then(({ data }) => data || []),
+        // Technologies
+        supabase
+          .from('technologies')
+          .select('*')
+          .eq('project_id', project.id)
+          .then(({ data }) => data || []),
+        // Objectives
+        supabase
+          .from('objectives')
+          .select('*')
+          .eq('project_id', project.id)
+          .then(({ data }) => data || []),
+        // Milestones
+        supabase
+          .from('milestones')
+          .select('*')
+          .eq('project_id', project.id)
+          .then(({ data }) => data || []),
+        // Functional requirements
+        supabase
+          .from('requirements_functional')
+          .select('*')
+          .eq('project_id', project.id)
+          .then(({ data }) => data || []),
+        // Non-functional requirements
+        supabase
+          .from('requirements_non_functional')
+          .select('*')
+          .eq('project_id', project.id)
+          .then(({ data }) => data || []),
+        // Audiences
+        supabase
+          .from('audiences')
+          .select('*')
+          .eq('project_id', project.id)
+          .then(({ data }) => data || []),
+        // Stakeholders
+        supabase
+          .from('stakeholders')
+          .select('*')
+          .eq('project_id', project.id)
+          .then(({ data }) => data || []),
+      ]);
+
+      console.log('Dados carregados:', {
+        team: teamData?.length || 0,
+        technologies: techData?.length || 0,
+        objectives: objectivesData?.length || 0,
+        milestones: milestonesData?.length || 0,
+        functionalReq: functionalReqData?.length || 0,
+        nonFunctionalReq: nonFunctionalReqData?.length || 0,
+        audiences: audiencesData?.length || 0,
+        payment: paymentData ? 'sim' : 'não',
+        stakeholders: stakeholdersData?.length || 0,
+      });
+
+      // Create extended project with all related data
+      const extendedProject = {
+        ...project,
+        members: teamData,
+        technologies: techData,
+        objectives: objectivesData,
+        milestones: milestonesData,
+        requirements_functional: functionalReqData,
+        requirements_non_functional: nonFunctionalReqData,
+        audiences: audiencesData,
+        payment_info: paymentData,
+        stakeholders: stakeholdersData,
+      };
+
+      console.log('Dados carregados:', extendedProject);
+
+      // Create a temporary element with the project content for PDF export
+      const tempDiv = document.createElement('div');
+      tempDiv.id = 'temp-document-content';
+      tempDiv.style.position = 'absolute';
+      tempDiv.style.left = '-9999px';
+      tempDiv.style.top = '-9999px';
+      tempDiv.style.width = '800px';
+      tempDiv.style.backgroundColor = 'white';
+      tempDiv.style.padding = '20px';
+
+      // Generate HTML content using the updated generateDocumentHTML function
+      tempDiv.innerHTML = generateDocumentHTML({
+        ...extendedProject,
+        members: extendedProject.members,
+        technologies: extendedProject.technologies,
+        audiences: extendedProject.audiences,
+        objectives: extendedProject.objectives,
+        milestones: extendedProject.milestones,
+        requirements_functional: extendedProject.requirements_functional,
+        requirements_non_functional:
+          extendedProject.requirements_non_functional,
+        payment: extendedProject.payment_info,
+        stakeholders: extendedProject.stakeholders,
+      });
+
+      console.log('Elemento temporário criado, adicionando ao DOM');
+      document.body.appendChild(tempDiv);
+
+      console.log('Chamando função exportToPDF...');
+      const result = await exportToPDF(project, 'temp-document-content');
+      console.log('Resultado da exportação:', result);
+
+      // Clean up
+      document.body.removeChild(tempDiv);
+      console.log('Elemento temporário removido');
+
+      if (result.success) {
+        toast.success(`PDF exportado com sucesso! Arquivo: ${result.fileName}`);
+      } else {
+        toast.error(`Erro ao exportar PDF: ${result.error}`);
+      }
+    } catch (error) {
+      console.error('Erro ao exportar PDF:', error);
+      toast.error('Erro ao exportar PDF');
     }
   };
 
@@ -260,12 +431,22 @@ export default function DashboardPage() {
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align='end'>
                         <DropdownMenuItem asChild>
-                          <Link href={`/editor/${project.id}`}>Editar</Link>
+                          <Link href={`/editor/${project.id}`}>
+                            <Edit className='h-4 w-4 mr-2' />
+                            Editar
+                          </Link>
                         </DropdownMenuItem>
                         <DropdownMenuItem asChild>
                           <Link href={`/projects/${project.id}`}>
+                            <Eye className='h-4 w-4 mr-2' />
                             Ver Detalhes
                           </Link>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          onClick={() => handleExportPDF(project)}
+                        >
+                          <Download className='h-4 w-4 mr-2' />
+                          Exportar PDF
                         </DropdownMenuItem>
                         <DropdownMenuSeparator />
                         <DropdownMenuItem

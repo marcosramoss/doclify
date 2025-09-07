@@ -5,6 +5,7 @@ import type {
   Technology,
   Audience,
   Objective,
+  Milestone,
   FunctionalRequirement,
   NonFunctionalRequirement,
   PaymentInfo,
@@ -24,21 +25,72 @@ export const exportToPDF = async (
       throw new Error('Element not found for PDF export');
     }
 
+    console.log('Elemento encontrado:', element);
+
     // Create canvas from HTML element
     const canvas = await html2canvas(element, {
       scale: 2,
       useCORS: true,
       allowTaint: true,
+      backgroundColor: '#ffffff',
+      logging: false,
+      ignoreElements: element => {
+        // Ignore elements that might cause color parsing issues
+        return element.tagName === 'SCRIPT' || element.tagName === 'STYLE';
+      },
+      onclone: clonedDoc => {
+        // Remove any CSS that might contain unsupported color functions
+        const styles = clonedDoc.querySelectorAll(
+          'style, link[rel="stylesheet"]'
+        );
+        styles.forEach(style => {
+          if (style.textContent && style.textContent.includes('lab(')) {
+            style.remove();
+          }
+        });
+
+        // Force basic styling to avoid color parsing issues
+        const basicStyle = clonedDoc.createElement('style');
+        basicStyle.textContent = `
+          * {
+            color: #000000 !important;
+            background-color: #ffffff !important;
+            border-color: #cccccc !important;
+          }
+          h1, h2, h3, h4, h5, h6 {
+            color: #333333 !important;
+          }
+          .text-gray-600, .text-gray-500 {
+            color: #666666 !important;
+          }
+        `;
+        clonedDoc.head.appendChild(basicStyle);
+      },
     });
 
+    console.log('Canvas criado:', canvas.width, 'x', canvas.height);
+
     const imgData = canvas.toDataURL('image/png');
-    const pdf = new jsPDF('p', 'mm', 'a4');
+    console.log('Imagem convertida para base64');
+
+    const pdf = new jsPDF({
+      orientation: 'portrait',
+      unit: 'mm',
+      format: 'a4',
+    });
 
     const imgWidth = 210; // A4 width in mm
     const pageHeight = 295; // A4 height in mm
     const imgHeight = (canvas.height * imgWidth) / canvas.width;
     let heightLeft = imgHeight;
     let position = 0;
+
+    console.log(
+      'Dimensões calculadas - Width:',
+      imgWidth,
+      'Height:',
+      imgHeight
+    );
 
     // Add first page
     pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
@@ -53,8 +105,11 @@ export const exportToPDF = async (
     }
 
     // Save the PDF
-    const fileName = `${project.title || 'documento'}_${new Date().toISOString().split('T')[0]}.pdf`;
+    const fileName = `${project.title?.replace(/[^a-zA-Z0-9]/g, '_') || 'documento'}_${new Date().toISOString().split('T')[0]}.pdf`;
+    console.log('Salvando PDF:', fileName);
+
     pdf.save(fileName);
+    console.log('PDF salvo com sucesso!');
 
     return { success: true, fileName };
   } catch (error) {
@@ -71,6 +126,7 @@ interface ExtendedProject extends Project {
   technologies?: Technology[];
   audiences?: Audience[];
   objectives?: Objective[];
+  milestones?: Milestone[];
   requirements_functional?: FunctionalRequirement[];
   requirements_non_functional?: NonFunctionalRequirement[];
   payment?: PaymentInfo;
@@ -89,6 +145,7 @@ export const generateDocumentHTML = (project: ExtendedProject) => {
     technologies,
     audiences,
     objectives,
+    milestones,
     requirements_functional,
     requirements_non_functional,
     payment,
@@ -108,19 +165,19 @@ export const generateDocumentHTML = (project: ExtendedProject) => {
         members && members.length > 0
           ? `
         <section style="margin-bottom: 30px;">
-          <h2 style="color: #333; border-bottom: 1px solid #ddd; padding-bottom: 10px;">Equipe</h2>
-          <div style="display: grid; gap: 10px;">
+          <h2 style="color: #333; margin-bottom: 15px;">Equipe</h2>
+          <ul style="list-style-type: none; padding: 0; margin: 0;">
             ${members
               .map(
                 member => `
-              <div style="padding: 10px; border: 1px solid #eee; border-radius: 5px;">
+              <li style="margin-bottom: 10px;">
                 <strong>${member.name}</strong> - ${member.role}
-                ${member.email ? `<br><small style="color: #666;">${member.email}</small>` : ''}
-              </div>
+                ${member.email ? `<br><span style="color: #666; font-size: 14px;">${member.email}</span>` : ''}
+              </li>
             `
               )
               .join('')}
-          </div>
+          </ul>
         </section>
       `
           : ''
@@ -130,20 +187,19 @@ export const generateDocumentHTML = (project: ExtendedProject) => {
         technologies && technologies.length > 0
           ? `
         <section style="margin-bottom: 30px;">
-          <h2 style="color: #333; border-bottom: 1px solid #ddd; padding-bottom: 10px;">Tecnologias</h2>
-          <div style="display: grid; gap: 10px;">
+          <h2 style="color: #333; margin-bottom: 15px;">Tecnologias</h2>
+          <ul style="list-style-type: disc; padding-left: 20px; margin: 0;">
             ${technologies
               .map(
                 tech => `
-              <div style="padding: 10px; border: 1px solid #eee; border-radius: 5px;">
-                <strong>${tech.name}</strong>
-                <span style="background: #f0f0f0; padding: 2px 8px; border-radius: 3px; font-size: 12px; margin-left: 10px;">${tech.category}</span>
-                ${tech.version ? `<br><small style="color: #666;">Versão: ${tech.version}</small>` : ''}
-              </div>
+              <li style="margin-bottom: 8px;">
+                <strong>${tech.name}</strong> (${tech.category})
+                ${tech.version ? `<br><span style="color: #666; font-size: 14px;">Versão: ${tech.version}</span>` : ''}
+              </li>
             `
               )
               .join('')}
-          </div>
+          </ul>
         </section>
       `
           : ''
@@ -153,20 +209,19 @@ export const generateDocumentHTML = (project: ExtendedProject) => {
         audiences && audiences.length > 0
           ? `
         <section style="margin-bottom: 30px;">
-          <h2 style="color: #333; border-bottom: 1px solid #ddd; padding-bottom: 10px;">Público-Alvo</h2>
-          <div style="display: grid; gap: 10px;">
+          <h2 style="color: #333; margin-bottom: 15px;">Público-Alvo</h2>
+          <ul style="list-style-type: disc; padding-left: 20px; margin: 0;">
             ${audiences
               .map(
                 audience => `
-              <div style="padding: 10px; border: 1px solid #eee; border-radius: 5px;">
-                <strong>${audience.name}</strong>
-                <span style="background: ${audience.priority === 'primary' ? '#e3f2fd' : '#f3e5f5'}; padding: 2px 8px; border-radius: 3px; font-size: 12px; margin-left: 10px;">${audience.priority === 'primary' ? 'Primário' : 'Secundário'}</span>
-                ${audience.description ? `<br><p style="margin: 5px 0 0 0; color: #666;">${audience.description}</p>` : ''}
-              </div>
+              <li style="margin-bottom: 12px;">
+                <strong>${audience.name}</strong> (${audience.priority === 'primary' ? 'Primário' : 'Secundário'})
+                ${audience.description ? `<br><span style="color: #666; font-size: 14px;">${audience.description}</span>` : ''}
+              </li>
             `
               )
               .join('')}
-          </div>
+          </ul>
         </section>
       `
           : ''
@@ -176,20 +231,42 @@ export const generateDocumentHTML = (project: ExtendedProject) => {
         objectives && objectives.length > 0
           ? `
         <section style="margin-bottom: 30px;">
-          <h2 style="color: #333; border-bottom: 1px solid #ddd; padding-bottom: 10px;">Objetivos</h2>
-          <div style="display: grid; gap: 10px;">
+          <h2 style="color: #333; margin-bottom: 15px;">Objetivos</h2>
+          <ul style="list-style-type: decimal; padding-left: 20px; margin: 0;">
             ${objectives
               .map(
                 objective => `
-              <div style="padding: 10px; border: 1px solid #eee; border-radius: 5px;">
-                <strong>${objective.title}</strong>
-                <span style="background: ${objective.priority === 'high' ? '#ffebee' : objective.priority === 'medium' ? '#fff3e0' : '#e8f5e8'}; padding: 2px 8px; border-radius: 3px; font-size: 12px; margin-left: 10px;">${objective.priority === 'high' ? 'Alta' : objective.priority === 'medium' ? 'Média' : 'Baixa'}</span>
-                <p style="margin: 5px 0 0 0; color: #666;">${objective.description}</p>
-              </div>
+              <li style="margin-bottom: 15px;">
+                <strong>${objective.title}</strong> (Prioridade: ${objective.priority === 'high' ? 'Alta' : objective.priority === 'medium' ? 'Média' : 'Baixa'})
+                <br><span style="color: #666; font-size: 14px;">${objective.description}</span>
+              </li>
             `
               )
               .join('')}
-          </div>
+          </ul>
+        </section>
+      `
+          : ''
+      }
+
+      ${
+        milestones && milestones.length > 0
+          ? `
+        <section style="margin-bottom: 30px;">
+          <h2 style="color: #333; margin-bottom: 15px;">Marcos do Projeto</h2>
+          <ul style="list-style-type: decimal; padding-left: 20px; margin: 0;">
+            ${milestones
+              .map(
+                milestone => `
+              <li style="margin-bottom: 15px;">
+                <strong>${milestone.title}</strong> (${milestone.status === 'completed' ? 'Concluído' : milestone.status === 'in_progress' ? 'Em Progresso' : 'Pendente'})
+                <br><span style="color: #666; font-size: 14px;">Data: ${new Date(milestone.due_date).toLocaleDateString('pt-BR')}</span>
+                ${milestone.description ? `<br><span style="color: #666; font-size: 14px;">${milestone.description}</span>` : ''}
+              </li>
+            `
+              )
+              .join('')}
+          </ul>
         </section>
       `
           : ''
@@ -199,21 +276,20 @@ export const generateDocumentHTML = (project: ExtendedProject) => {
         requirements_functional && requirements_functional.length > 0
           ? `
         <section style="margin-bottom: 30px;">
-          <h2 style="color: #333; border-bottom: 1px solid #ddd; padding-bottom: 10px;">Requisitos Funcionais</h2>
-          <div style="display: grid; gap: 10px;">
+          <h2 style="color: #333; margin-bottom: 15px;">Requisitos Funcionais</h2>
+          <ol style="padding-left: 20px; margin: 0;">
             ${requirements_functional
               .map(
                 (req, index) => `
-              <div style="padding: 10px; border: 1px solid #eee; border-radius: 5px;">
-                <strong>RF${String(index + 1).padStart(2, '0')} - ${req.title}</strong>
-                <span style="background: ${req.priority === 'must_have' ? '#ffebee' : req.priority === 'should_have' ? '#fff3e0' : req.priority === 'could_have' ? '#e8f5e8' : '#f5f5f5'}; padding: 2px 8px; border-radius: 3px; font-size: 12px; margin-left: 10px;">${req.priority === 'must_have' ? 'Obrigatório' : req.priority === 'should_have' ? 'Importante' : req.priority === 'could_have' ? 'Desejável' : 'Não será feito'}</span>
-                <p style="margin: 5px 0 0 0; color: #666;">${req.description}</p>
-                ${req.acceptance_criteria ? `<p style="margin: 5px 0 0 0; color: #666; font-size: 14px;"><strong>Critérios de Aceitação:</strong> ${req.acceptance_criteria}</p>` : ''}
-              </div>
+              <li style="margin-bottom: 15px;">
+                <strong>RF${String(index + 1).padStart(2, '0')} - ${req.title}</strong> (${req.priority === 'must_have' ? 'Obrigatório' : req.priority === 'should_have' ? 'Importante' : req.priority === 'could_have' ? 'Desejável' : 'Não será feito'})
+                <br><span style="color: #666; font-size: 14px;">${req.description}</span>
+                ${req.acceptance_criteria ? `<br><span style="color: #666; font-size: 14px;"><strong>Critérios de Aceitação:</strong> ${req.acceptance_criteria}</span>` : ''}
+              </li>
             `
               )
               .join('')}
-          </div>
+          </ol>
         </section>
       `
           : ''
@@ -223,21 +299,20 @@ export const generateDocumentHTML = (project: ExtendedProject) => {
         requirements_non_functional && requirements_non_functional.length > 0
           ? `
         <section style="margin-bottom: 30px;">
-          <h2 style="color: #333; border-bottom: 1px solid #ddd; padding-bottom: 10px;">Requisitos Não Funcionais</h2>
-          <div style="display: grid; gap: 10px;">
+          <h2 style="color: #333; margin-bottom: 15px;">Requisitos Não Funcionais</h2>
+          <ol style="padding-left: 20px; margin: 0;">
             ${requirements_non_functional
               .map(
                 (req, index) => `
-              <div style="padding: 10px; border: 1px solid #eee; border-radius: 5px;">
-                <strong>RNF${String(index + 1).padStart(2, '0')} - ${req.title}</strong>
-                <span style="background: #e3f2fd; padding: 2px 8px; border-radius: 3px; font-size: 12px; margin-left: 10px;">${req.category}</span>
-                <p style="margin: 5px 0 0 0; color: #666;">${req.description}</p>
-                ${req.metric && req.target_value ? `<p style="margin: 5px 0 0 0; color: #666; font-size: 14px;"><strong>Métrica:</strong> ${req.metric} - <strong>Meta:</strong> ${req.target_value}</p>` : ''}
-              </div>
+              <li style="margin-bottom: 15px;">
+                <strong>RNF${String(index + 1).padStart(2, '0')} - ${req.title}</strong> (${req.category})
+                <br><span style="color: #666; font-size: 14px;">${req.description}</span>
+                ${req.metric && req.target_value ? `<br><span style="color: #666; font-size: 14px;"><strong>Métrica:</strong> ${req.metric} - <strong>Meta:</strong> ${req.target_value}</span>` : ''}
+              </li>
             `
               )
               .join('')}
-          </div>
+          </ol>
         </section>
       `
           : ''
@@ -247,12 +322,10 @@ export const generateDocumentHTML = (project: ExtendedProject) => {
         payment
           ? `
         <section style="margin-bottom: 30px;">
-          <h2 style="color: #333; border-bottom: 1px solid #ddd; padding-bottom: 10px;">Informações de Pagamento</h2>
-          <div style="padding: 15px; border: 1px solid #eee; border-radius: 5px; background: #f9f9f9;">
-            <p><strong>Valor Total:</strong> ${new Intl.NumberFormat('pt-BR', { style: 'currency', currency: payment.currency || 'BRL' }).format(payment.total_amount)}</p>
-            ${payment.payment_terms ? `<p><strong>Condições de Pagamento:</strong> ${payment.payment_terms}</p>` : ''}
-            ${payment.milestones ? `<p><strong>Marcos:</strong> ${payment.milestones}</p>` : ''}
-          </div>
+          <h2 style="color: #333; margin-bottom: 15px;">Informações de Pagamento</h2>
+          <p><strong>Valor Total:</strong> ${new Intl.NumberFormat('pt-BR', { style: 'currency', currency: payment.currency || 'BRL' }).format(payment.total_amount)}</p>
+          ${payment.payment_terms ? `<p><strong>Condições de Pagamento:</strong> ${payment.payment_terms}</p>` : ''}
+          ${payment.milestones ? `<p><strong>Marcos:</strong> ${payment.milestones}</p>` : ''}
         </section>
       `
           : ''
@@ -262,22 +335,21 @@ export const generateDocumentHTML = (project: ExtendedProject) => {
         stakeholders && stakeholders.length > 0
           ? `
         <section style="margin-bottom: 30px;">
-          <h2 style="color: #333; border-bottom: 1px solid #ddd; padding-bottom: 10px;">Stakeholders</h2>
-          <div style="display: grid; gap: 10px;">
+          <h2 style="color: #333; margin-bottom: 15px;">Stakeholders</h2>
+          <ul style="list-style-type: none; padding: 0; margin: 0;">
             ${stakeholders
               .map(
                 stakeholder => `
-              <div style="padding: 10px; border: 1px solid #eee; border-radius: 5px;">
-                <strong>${stakeholder.name}</strong> - ${stakeholder.role}
-                ${stakeholder.signature_required ? '<span style="background: #ffebee; padding: 2px 8px; border-radius: 3px; font-size: 12px; margin-left: 10px;">Assinatura Obrigatória</span>' : ''}
-                <br><small style="color: #666;">${stakeholder.email}</small>
-                ${stakeholder.company ? `<br><small style="color: #666;">${stakeholder.company}</small>` : ''}
-                ${stakeholder.phone ? `<br><small style="color: #666;">${stakeholder.phone}</small>` : ''}
-              </div>
+              <li style="margin-bottom: 15px;">
+                <strong>${stakeholder.name}</strong> - ${stakeholder.role}${stakeholder.signature_required ? ' (Assinatura Obrigatória)' : ''}
+                <br><span style="color: #666; font-size: 14px;">${stakeholder.email}</span>
+                ${stakeholder.company ? `<br><span style="color: #666; font-size: 14px;">${stakeholder.company}</span>` : ''}
+                ${stakeholder.phone ? `<br><span style="color: #666; font-size: 14px;">${stakeholder.phone}</span>` : ''}
+              </li>
             `
               )
               .join('')}
-          </div>
+          </ul>
         </section>
       `
           : ''
