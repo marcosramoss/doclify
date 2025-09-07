@@ -11,6 +11,8 @@ import {
   Users,
   Tag,
   Target,
+  CheckSquare,
+  Shield,
 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -24,10 +26,19 @@ import {
   useTeamMembers,
   useTechnologies,
   useObjectives,
+  useFunctionalRequirements,
+  useNonFunctionalRequirements,
 } from '@/hooks/useProjects';
 import { formatDate } from '@/utils/format';
 import { exportToPDF } from '@/utils/export';
-import type { Project, Technology, Objective, TeamMember } from '@/types';
+import type {
+  Project,
+  Technology,
+  Objective,
+  TeamMember,
+  FunctionalRequirement,
+  NonFunctionalRequirement,
+} from '@/types';
 
 // Extended project type for display
 interface ExtendedProject extends Project {
@@ -61,6 +72,10 @@ export default function ProjectDetailsPage() {
     useTechnologies(projectId);
   const { data: objectives, isLoading: isLoadingObjectives } =
     useObjectives(projectId);
+  const { data: functionalRequirements, isLoading: isLoadingFunctional } =
+    useFunctionalRequirements(projectId);
+  const { data: nonFunctionalRequirements, isLoading: isLoadingNonFunctional } =
+    useNonFunctionalRequirements(projectId);
 
   const handleExportPDF = async () => {
     if (!project) return;
@@ -90,7 +105,12 @@ export default function ProjectDetailsPage() {
   };
 
   const isLoadingAny =
-    isLoading || isLoadingTeam || isLoadingTech || isLoadingObjectives;
+    isLoading ||
+    isLoadingTeam ||
+    isLoadingTech ||
+    isLoadingObjectives ||
+    isLoadingFunctional ||
+    isLoadingNonFunctional;
 
   if (isLoadingAny) {
     return (
@@ -338,6 +358,132 @@ export default function ProjectDetailsPage() {
                 </CardContent>
               </Card>
             )}
+
+            {/* Functional Requirements */}
+            {functionalRequirements && functionalRequirements.length > 0 && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className='flex items-center'>
+                    <CheckSquare className='h-5 w-5 mr-2' />
+                    Requisitos Funcionais ({functionalRequirements.length})
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className='space-y-3'>
+                    {functionalRequirements.map((requirement, index) => {
+                      const priorityColors = {
+                        must_have: 'bg-red-100 text-red-800',
+                        should_have: 'bg-yellow-100 text-yellow-800',
+                        could_have: 'bg-blue-100 text-blue-800',
+                        wont_have: 'bg-gray-100 text-gray-800',
+                      };
+                      const priorityLabels = {
+                        must_have: 'Obrigatório',
+                        should_have: 'Importante',
+                        could_have: 'Desejável',
+                        wont_have: 'Não Prioritário',
+                      };
+
+                      return (
+                        <div
+                          key={requirement.id || index}
+                          className='p-4 bg-blue-50 rounded-lg border-l-4 border-blue-500'
+                        >
+                          <div className='flex items-start justify-between mb-2'>
+                            <h4 className='font-medium text-gray-900'>
+                              {requirement.title}
+                            </h4>
+                            <Badge
+                              variant='secondary'
+                              className={`text-xs ${priorityColors[requirement.priority]}`}
+                            >
+                              {priorityLabels[requirement.priority]}
+                            </Badge>
+                          </div>
+                          {requirement.description && (
+                            <p className='text-sm text-gray-600 mt-2'>
+                              {requirement.description}
+                            </p>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Non-Functional Requirements */}
+            {nonFunctionalRequirements &&
+              nonFunctionalRequirements.length > 0 && (
+                <Card>
+                  <CardHeader>
+                    <CardTitle className='flex items-center'>
+                      <Shield className='h-5 w-5 mr-2' />
+                      Requisitos Não Funcionais (
+                      {nonFunctionalRequirements.length})
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className='space-y-3'>
+                      {nonFunctionalRequirements.map((requirement, index) => {
+                        const categoryColors = {
+                          performance: 'bg-orange-100 text-orange-800',
+                          security: 'bg-red-100 text-red-800',
+                          usability: 'bg-blue-100 text-blue-800',
+                          reliability: 'bg-green-100 text-green-800',
+                          scalability: 'bg-purple-100 text-purple-800',
+                          other: 'bg-gray-100 text-gray-800',
+                        };
+                        const categoryLabels = {
+                          performance: 'Performance',
+                          security: 'Segurança',
+                          usability: 'Usabilidade',
+                          reliability: 'Confiabilidade',
+                          scalability: 'Escalabilidade',
+                          other: 'Outros',
+                        };
+
+                        return (
+                          <div
+                            key={requirement.id || index}
+                            className='p-4 bg-green-50 rounded-lg border-l-4 border-green-500'
+                          >
+                            <div className='flex items-start justify-between mb-2'>
+                              <h4 className='font-medium text-gray-900'>
+                                {requirement.title}
+                              </h4>
+                              <Badge
+                                variant='secondary'
+                                className={`text-xs ${categoryColors[requirement.category]}`}
+                              >
+                                {categoryLabels[requirement.category]}
+                              </Badge>
+                            </div>
+                            {requirement.description && (
+                              <p className='text-sm text-gray-600 mt-2'>
+                                {requirement.description}
+                              </p>
+                            )}
+                            {requirement.metric && (
+                              <div className='mt-2 text-xs text-gray-500'>
+                                <span className='font-medium'>Métrica:</span>{' '}
+                                {requirement.metric}
+                                {requirement.target_value && (
+                                  <span className='ml-2'>
+                                    <span className='font-medium'>Meta:</span>{' '}
+                                    {requirement.target_value}
+                                  </span>
+                                )}
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
           </div>
 
           {/* Sidebar */}
@@ -425,6 +571,32 @@ export default function ProjectDetailsPage() {
                     </p>
                   </div>
                 )}
+
+                {functionalRequirements &&
+                  functionalRequirements.length > 0 && (
+                    <div>
+                      <label className='text-sm font-medium text-gray-500'>
+                        Requisitos Funcionais
+                      </label>
+                      <p className='mt-1 text-sm'>
+                        {functionalRequirements.length} requisito
+                        {functionalRequirements.length > 1 ? 's' : ''}
+                      </p>
+                    </div>
+                  )}
+
+                {nonFunctionalRequirements &&
+                  nonFunctionalRequirements.length > 0 && (
+                    <div>
+                      <label className='text-sm font-medium text-gray-500'>
+                        Requisitos Não Funcionais
+                      </label>
+                      <p className='mt-1 text-sm'>
+                        {nonFunctionalRequirements.length} requisito
+                        {nonFunctionalRequirements.length > 1 ? 's' : ''}
+                      </p>
+                    </div>
+                  )}
               </CardContent>
             </Card>
 

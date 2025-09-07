@@ -18,7 +18,11 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import type { Project } from '@/types';
+import type {
+  Project,
+  FunctionalRequirement,
+  NonFunctionalRequirement,
+} from '@/types';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import {
@@ -43,9 +47,15 @@ interface ReviewStepProps {
   onFinish: () => void;
 }
 
+// Extended project type for review state
+interface ExtendedProject extends Project {
+  functional_requirements?: FunctionalRequirement[];
+  non_functional_requirements?: NonFunctionalRequirement[];
+}
+
 export function ReviewStep({ onBack, onFinish }: ReviewStepProps) {
-  const { currentProject: project, setCurrentProject: setProject } =
-    useProjectStore();
+  const { currentProject, setCurrentProject: setProject } = useProjectStore();
+  const project = currentProject as ExtendedProject | null;
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
 
@@ -120,6 +130,20 @@ export function ReviewStep({ onBack, onFinish }: ReviewStepProps) {
       {
         name: 'Objetivos',
         completed: !!(project?.objectives && project.objectives.length > 0),
+      },
+      {
+        name: 'Requisitos Funcionais',
+        completed: !!(
+          project?.functional_requirements &&
+          project.functional_requirements.length > 0
+        ),
+      },
+      {
+        name: 'Requisitos Não Funcionais',
+        completed: !!(
+          project?.non_functional_requirements &&
+          project.non_functional_requirements.length > 0
+        ),
       },
       {
         name: 'Cronograma',
@@ -584,10 +608,59 @@ export function ReviewStep({ onBack, onFinish }: ReviewStepProps) {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className='text-center py-8 text-gray-500'>
-                  <CheckCircle className='h-12 w-12 mx-auto mb-4 opacity-50' />
-                  <p>Nenhum requisito funcional configurado</p>
-                </div>
+                {project?.functional_requirements &&
+                project.functional_requirements.length > 0 ? (
+                  <div className='space-y-4'>
+                    {project.functional_requirements.map((req, index) => (
+                      <div
+                        key={index}
+                        className='p-4 bg-gray-50 rounded-lg border'
+                      >
+                        <div className='flex items-center justify-between mb-2'>
+                          <h4 className='font-medium text-gray-900'>
+                            {req.title}
+                          </h4>
+                          <div className='flex items-center gap-2'>
+                            <Badge
+                              variant={
+                                req.priority === 'must_have'
+                                  ? 'destructive'
+                                  : req.priority === 'should_have'
+                                    ? 'default'
+                                    : req.priority === 'could_have'
+                                      ? 'secondary'
+                                      : 'outline'
+                              }
+                            >
+                              {req.priority === 'must_have' && 'Must Have'}
+                              {req.priority === 'should_have' && 'Should Have'}
+                              {req.priority === 'could_have' && 'Could Have'}
+                              {req.priority === 'wont_have' && "Won't Have"}
+                            </Badge>
+                          </div>
+                        </div>
+                        {req.description && (
+                          <p className='text-sm text-gray-600 mb-2'>
+                            {req.description}
+                          </p>
+                        )}
+                        {req.acceptance_criteria && (
+                          <p className='text-xs text-gray-500'>
+                            <span className='font-medium'>
+                              Critérios de Aceitação:
+                            </span>{' '}
+                            {req.acceptance_criteria}
+                          </p>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className='text-center py-8 text-gray-500'>
+                    <CheckCircle className='h-12 w-12 mx-auto mb-4 opacity-50' />
+                    <p>Nenhum requisito funcional configurado</p>
+                  </div>
+                )}
               </CardContent>
             </Card>
 
@@ -600,10 +673,65 @@ export function ReviewStep({ onBack, onFinish }: ReviewStepProps) {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className='text-center py-8 text-gray-500'>
-                  <AlertCircle className='h-12 w-12 mx-auto mb-4 opacity-50' />
-                  <p>Nenhum requisito não funcional configurado</p>
-                </div>
+                {project?.non_functional_requirements &&
+                project.non_functional_requirements.length > 0 ? (
+                  <div className='space-y-4'>
+                    {project.non_functional_requirements.map((req, index) => (
+                      <div
+                        key={index}
+                        className='p-4 bg-gray-50 rounded-lg border'
+                      >
+                        <div className='flex items-center justify-between mb-2'>
+                          <h4 className='font-medium text-gray-900'>
+                            {req.title}
+                          </h4>
+                          <Badge
+                            variant={
+                              req.category === 'performance'
+                                ? 'default'
+                                : req.category === 'security'
+                                  ? 'destructive'
+                                  : req.category === 'usability'
+                                    ? 'secondary'
+                                    : 'outline'
+                            }
+                          >
+                            {req.category === 'performance' && 'Performance'}
+                            {req.category === 'security' && 'Segurança'}
+                            {req.category === 'usability' && 'Usabilidade'}
+                            {req.category === 'reliability' && 'Confiabilidade'}
+                            {req.category === 'scalability' && 'Escalabilidade'}
+                            {req.category === 'other' && 'Outros'}
+                          </Badge>
+                        </div>
+                        {req.description && (
+                          <p className='text-sm text-gray-600 mb-2'>
+                            {req.description}
+                          </p>
+                        )}
+                        <div className='flex gap-4 text-xs text-gray-500'>
+                          {req.metric && (
+                            <span>
+                              <span className='font-medium'>Métrica:</span>{' '}
+                              {req.metric}
+                            </span>
+                          )}
+                          {req.target_value && (
+                            <span>
+                              <span className='font-medium'>Valor Alvo:</span>{' '}
+                              {req.target_value}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className='text-center py-8 text-gray-500'>
+                    <AlertCircle className='h-12 w-12 mx-auto mb-4 opacity-50' />
+                    <p>Nenhum requisito não funcional configurado</p>
+                  </div>
+                )}
               </CardContent>
             </Card>
           </div>

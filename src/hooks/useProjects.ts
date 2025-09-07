@@ -7,6 +7,8 @@ import type {
   TeamMember,
   Technology,
   Objective,
+  FunctionalRequirement,
+  NonFunctionalRequirement,
   TeamFormData,
   TechnologyFormData,
   ObjectiveFormData,
@@ -369,18 +371,158 @@ export const useObjectives = (projectId: string) => {
   return useQuery({
     queryKey: ['objectives', projectId],
     queryFn: async () => {
-      if (!user) throw new Error('User not authenticated');
+      if (!user) return [];
 
       const { data, error } = await supabase
         .from('objectives')
         .select('*')
-        .eq('project_id', projectId);
+        .eq('project_id', projectId)
+        .order('created_at', { ascending: true });
 
       if (error) {
-        throw error;
+        console.error('Error fetching objectives:', error);
+        return [];
       }
 
       return data as Objective[];
+    },
+    enabled: !!user && !!projectId,
+  });
+};
+
+// Create functional requirements
+export const useCreateFunctionalRequirements = () => {
+  const { user } = useAuth();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({
+      projectId,
+      requirements,
+    }: {
+      projectId: string;
+      requirements: Omit<
+        FunctionalRequirement,
+        'id' | 'project_id' | 'created_at'
+      >[];
+    }) => {
+      if (!user) throw new Error('User not authenticated');
+
+      const requirementsWithProjectId = requirements.map(req => ({
+        ...req,
+        project_id: projectId,
+      }));
+
+      const { data, error } = await supabase
+        .from('requirements_functional')
+        .insert(requirementsWithProjectId)
+        .select();
+
+      if (error) {
+        console.error('Error creating functional requirements:', error);
+        throw error;
+      }
+
+      return data as FunctionalRequirement[];
+    },
+    onSuccess: (_, { projectId }) => {
+      queryClient.invalidateQueries({
+        queryKey: ['functional-requirements', projectId],
+      });
+    },
+  });
+};
+
+// Create non-functional requirements
+export const useCreateNonFunctionalRequirements = () => {
+  const { user } = useAuth();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({
+      projectId,
+      requirements,
+    }: {
+      projectId: string;
+      requirements: Omit<
+        NonFunctionalRequirement,
+        'id' | 'project_id' | 'created_at'
+      >[];
+    }) => {
+      if (!user) throw new Error('User not authenticated');
+
+      const requirementsWithProjectId = requirements.map(req => ({
+        ...req,
+        project_id: projectId,
+      }));
+
+      const { data, error } = await supabase
+        .from('requirements_non_functional')
+        .insert(requirementsWithProjectId)
+        .select();
+
+      if (error) {
+        console.error('Error creating non-functional requirements:', error);
+        throw error;
+      }
+
+      return data as NonFunctionalRequirement[];
+    },
+    onSuccess: (_, { projectId }) => {
+      queryClient.invalidateQueries({
+        queryKey: ['non-functional-requirements', projectId],
+      });
+    },
+  });
+};
+
+// Fetch functional requirements
+export const useFunctionalRequirements = (projectId: string) => {
+  const { user } = useAuth();
+
+  return useQuery({
+    queryKey: ['functional-requirements', projectId],
+    queryFn: async () => {
+      if (!user) return [];
+
+      const { data, error } = await supabase
+        .from('requirements_functional')
+        .select('*')
+        .eq('project_id', projectId)
+        .order('created_at', { ascending: true });
+
+      if (error) {
+        console.error('Error fetching functional requirements:', error);
+        return [];
+      }
+
+      return data as FunctionalRequirement[];
+    },
+    enabled: !!user && !!projectId,
+  });
+};
+
+// Fetch non-functional requirements
+export const useNonFunctionalRequirements = (projectId: string) => {
+  const { user } = useAuth();
+
+  return useQuery({
+    queryKey: ['non-functional-requirements', projectId],
+    queryFn: async () => {
+      if (!user) return [];
+
+      const { data, error } = await supabase
+        .from('requirements_non_functional')
+        .select('*')
+        .eq('project_id', projectId)
+        .order('created_at', { ascending: true });
+
+      if (error) {
+        console.error('Error fetching non-functional requirements:', error);
+        return [];
+      }
+
+      return data as NonFunctionalRequirement[];
     },
     enabled: !!user && !!projectId,
   });

@@ -93,7 +93,6 @@ export interface FunctionalRequirement {
   title: string;
   description: string;
   priority: 'must_have' | 'should_have' | 'could_have' | 'wont_have';
-  status: 'pending' | 'in_progress' | 'completed';
   acceptance_criteria?: string;
   created_at: string;
 }
