@@ -92,7 +92,15 @@ export interface FunctionalRequirement {
   project_id: string;
   title: string;
   description: string;
-  priority: 'must_have' | 'should_have' | 'could_have' | 'wont_have';
+  priority:
+    | 'must_have'
+    | 'should_have'
+    | 'could_have'
+    | 'wont_have'
+    | 'obrigatorio'
+    | 'importante'
+    | 'desejavel'
+    | 'nao_prioritario';
   acceptance_criteria?: string;
   created_at: string;
 }

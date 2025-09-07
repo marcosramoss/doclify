@@ -19,6 +19,7 @@ import { Separator } from '@/components/ui/separator';
 interface SidebarProps {
   isOpen?: boolean;
   onClose?: () => void;
+  onCollapse?: (collapsed: boolean) => void;
 }
 
 const navigation = [
@@ -52,9 +53,15 @@ const secondaryNavigation = [
   },
 ];
 
-export function Sidebar({ isOpen = true, onClose }: SidebarProps) {
+export function Sidebar({ isOpen = true, onClose, onCollapse }: SidebarProps) {
   const pathname = usePathname();
   const [isCollapsed, setIsCollapsed] = useState(false);
+
+  const handleCollapse = () => {
+    const newCollapsed = !isCollapsed;
+    setIsCollapsed(newCollapsed);
+    onCollapse?.(newCollapsed);
+  };
 
   return (
     <>
@@ -69,7 +76,7 @@ export function Sidebar({ isOpen = true, onClose }: SidebarProps) {
       {/* Sidebar */}
       <aside
         className={cn(
-          'fixed left-0 top-0 z-50 h-screen bg-white border-r transition-all duration-300 md:relative md:translate-x-0 md:h-auto md:min-h-screen',
+          'fixed left-0 top-0 z-50 h-screen bg-white border-r transition-all duration-300 md:fixed md:translate-x-0',
           isOpen ? 'translate-x-0' : '-translate-x-full',
           isCollapsed ? 'w-18' : 'w-64'
         )}
@@ -87,7 +94,7 @@ export function Sidebar({ isOpen = true, onClose }: SidebarProps) {
             <Button
               variant='ghost'
               size='sm'
-              onClick={() => setIsCollapsed(!isCollapsed)}
+              onClick={handleCollapse}
               className='hidden md:flex'
             >
               <ChevronLeft

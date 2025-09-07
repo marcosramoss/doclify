@@ -49,29 +49,29 @@ interface ExtendedProject extends Project {
 
 const priorityOptions = [
   {
-    value: 'must_have',
-    label: 'Must Have',
+    value: 'obrigatorio',
+    label: 'Obrigatório',
     description: 'Requisitos críticos e obrigatórios',
     color: 'bg-red-100 text-red-800',
     icon: Star,
   },
   {
-    value: 'should_have',
-    label: 'Should Have',
+    value: 'importante',
+    label: 'Importante',
     description: 'Requisitos importantes mas não críticos',
     color: 'bg-orange-100 text-orange-800',
     icon: AlertCircle,
   },
   {
-    value: 'could_have',
-    label: 'Could Have',
+    value: 'desejavel',
+    label: 'Desejável',
     description: 'Requisitos desejáveis',
     color: 'bg-yellow-100 text-yellow-800',
     icon: CheckSquare,
   },
   {
-    value: 'wont_have',
-    label: "Won't Have",
+    value: 'nao_prioritario',
+    label: 'Não Prioritário',
     description: 'Requisitos que não serão implementados nesta versão',
     color: 'bg-gray-100 text-gray-800',
     icon: FileText,
@@ -82,20 +82,20 @@ const exampleRequirements = [
   {
     title: 'Autenticação de usuário',
     description: 'O sistema deve permitir login e logout de usuários',
-    priority: 'must_have' as const,
+    priority: 'obrigatorio' as const,
     acceptance_criteria:
       'Usuário pode fazer login com email/senha e logout com sucesso',
   },
   {
     title: 'Cadastro de produtos',
     description: 'Permitir cadastro, edição e exclusão de produtos',
-    priority: 'must_have' as const,
+    priority: 'obrigatorio' as const,
     acceptance_criteria: 'CRUD completo de produtos com validação de dados',
   },
   {
     title: 'Relatórios de vendas',
     description: 'Gerar relatórios mensais de vendas',
-    priority: 'should_have' as const,
+    priority: 'importante' as const,
     acceptance_criteria: 'Relatório em PDF com dados do mês selecionado',
   },
 ];
@@ -139,7 +139,7 @@ export function FunctionalRequirementsStep({
     append({
       title: '',
       description: '',
-      priority: 'must_have',
+      priority: 'obrigatorio',
       acceptance_criteria: '',
     });
   };
@@ -321,10 +321,10 @@ export function FunctionalRequirementsStep({
                             setValue(
                               `requirements.${index}.priority`,
                               value as
-                                | 'must_have'
-                                | 'should_have'
-                                | 'could_have'
-                                | 'wont_have'
+                                | 'obrigatorio'
+                                | 'importante'
+                                | 'desejavel'
+                                | 'nao_prioritario'
                             )
                           }
                         >

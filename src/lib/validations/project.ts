@@ -82,7 +82,16 @@ export const objectivesSchema = z.object({
 export const functionalRequirementSchema = z.object({
   title: z.string().min(1, 'Título do requisito é obrigatório'),
   description: z.string().min(1, 'Descrição do requisito é obrigatória'),
-  priority: z.enum(['must_have', 'should_have', 'could_have', 'wont_have']),
+  priority: z.enum([
+    'must_have',
+    'should_have',
+    'could_have',
+    'wont_have',
+    'obrigatorio',
+    'importante',
+    'desejavel',
+    'nao_prioritario',
+  ]),
   acceptance_criteria: z.string().optional(),
 });
 

@@ -30,20 +30,20 @@ interface TeamStepProps {
 }
 
 const roleOptions = [
-  { value: 'front_end_developer', label: 'Front-end Developer' },
-  { value: 'back_end_developer', label: 'Back-end Developer' },
-  { value: 'full_stack_developer', label: 'Full-stack Developer' },
-  { value: 'mobile_developer', label: 'Mobile Developer' },
-  { value: 'database_administrator', label: 'Database Administrator' },
+  { value: 'front_end_developer', label: 'Desenvolvedor Front-end' },
+  { value: 'back_end_developer', label: 'Desenvolvedor Back-end' },
+  { value: 'full_stack_developer', label: 'Desenvolvedor Full-stack' },
+  { value: 'mobile_developer', label: 'Desenvolvedor Mobile' },
+  { value: 'database_administrator', label: 'Administrador de Banco de Dados' },
   { value: 'project_manager', label: 'Gerente de Projeto' },
-  { value: 'tech_lead', label: 'Tech Lead' },
+  { value: 'tech_lead', label: 'Líder Técnico' },
   { value: 'designer', label: 'Designer' },
   { value: 'analyst', label: 'Analista' },
-  { value: 'qa', label: 'QA/Tester' },
-  { value: 'devops', label: 'DevOps' },
-  { value: 'product_owner', label: 'Product Owner' },
+  { value: 'qa', label: 'Analista de Qualidade' },
+  { value: 'devops', label: 'Engenheiro DevOps' },
+  { value: 'product_owner', label: 'Dono do Produto' },
   { value: 'scrum_master', label: 'Scrum Master' },
-  { value: 'stakeholder', label: 'Stakeholder' },
+  { value: 'stakeholder', label: 'Parte Interessada' },
   { value: 'other', label: 'Outro' },
 ];
 

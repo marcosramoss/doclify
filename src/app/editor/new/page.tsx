@@ -405,82 +405,120 @@ export default function NewProjectPage() {
       title='Novo Projeto'
       description='Crie um novo projeto de documentação'
     >
-      <div className='max-w-4xl mx-auto space-y-6'>
+      <div className='min-h-screen bg-gray-50'>
         {/* Header */}
-        <div className='flex items-center justify-between'>
-          <div className='flex items-center space-x-4'>
-            <Button
-              variant='ghost'
-              size='sm'
-              onClick={() => router.push('/dashboard')}
-            >
-              <ArrowLeft className='h-4 w-4 mr-2' />
-              Voltar ao Dashboard
-            </Button>
-            <div className='flex items-center space-x-2'>
-              <FileText className='h-5 w-5 text-blue-600' />
-              <h1 className='text-xl font-semibold'>Novo Projeto</h1>
+        <div className='sticky top-0 z-10 bg-white border-b'>
+          <div className='max-w-7xl mx-auto'>
+            <div className='flex items-center justify-between h-16 px-4'>
+              <div className='flex items-center space-x-4'>
+                <Button
+                  variant='ghost'
+                  size='sm'
+                  onClick={() => router.push('/dashboard')}
+                  className='text-gray-600 hover:text-gray-900'
+                >
+                  <ArrowLeft className='h-4 w-4 mr-2' />
+                  Voltar
+                </Button>
+                <div className='flex items-center space-x-2'>
+                  <FileText className='h-5 w-5 text-blue-600' />
+                  <h1 className='text-lg font-semibold text-gray-900'>
+                    Novo Projeto
+                  </h1>
+                </div>
+              </div>
+
+              <div className='flex items-center space-x-4'>
+                <div className='text-sm text-gray-600'>
+                  Etapa {currentStep + 1} de {steps.length}
+                </div>
+                <div className='w-32'>
+                  <Progress value={progress} className='h-2' />
+                </div>
+              </div>
             </div>
           </div>
         </div>
 
-        {/* Progress */}
-        <div className='space-y-2'>
-          <div className='flex justify-between text-sm text-gray-600'>
-            <span>Progresso</span>
-            <span>
-              {currentStep + 1} de {steps.length}
-            </span>
-          </div>
-          <Progress value={progress} className='h-2' />
-        </div>
-
-        {/* Step Navigation */}
-        <StepNavigation
-          steps={steps}
-          currentStep={currentStep}
-          onStepClick={setCurrentStep}
-        />
-
-        {/* Step Content */}
-        <Card>
-          <CardContent className='p-6'>
-            <div className='mb-6'>
-              <h2 className='text-lg font-semibold mb-2'>
-                {steps[currentStep].title}
+        <div className='flex h-[calc(100vh-4rem)]'>
+          {/* Sidebar Navigation */}
+          <div className='w-80 bg-white border-r border-gray-200 flex flex-col'>
+            <div className='p-6 border-b border-gray-200'>
+              <h2 className='text-lg font-semibold text-gray-900 mb-4'>
+                Progresso
               </h2>
-              <p className='text-gray-600'>{steps[currentStep].description}</p>
+              <div className='mb-4'>
+                <Progress value={progress} className='h-2 mb-2' />
+                <div className='text-sm text-gray-600'>
+                  {Math.round(progress)}% concluído
+                </div>
+              </div>
             </div>
 
-            {(() => {
-              const StepComponent = steps[currentStep].component;
-              const isLastStep = currentStep === steps.length - 1;
-              const isFirstStep = currentStep === 0;
+            <div className='flex-1 overflow-y-auto p-6'>
+              <StepNavigation
+                steps={steps.map((step, index) => ({
+                  id: step.id,
+                  title: step.title,
+                  description: step.description,
+                  status:
+                    index < currentStep
+                      ? 'completed'
+                      : index === currentStep
+                        ? 'current'
+                        : 'pending',
+                }))}
+                currentStep={currentStep}
+                onStepClick={setCurrentStep}
+              />
+            </div>
+          </div>
 
-              // Special handling for ReviewStep which has different props
-              if (isLastStep && StepComponent === ReviewStep) {
+          {/* Main Content */}
+          <div className='flex-1 overflow-y-auto'>
+            <div className='p-8'>
+              <div className='mb-6'>
+                <h2 className='text-lg font-semibold mb-2'>
+                  {steps[currentStep].title}
+                </h2>
+                <p className='text-gray-600'>
+                  {steps[currentStep].description}
+                </p>
+              </div>
+
+              {(() => {
+                const StepComponent = steps[currentStep].component;
+                const isLastStep = currentStep === steps.length - 1;
+                const isFirstStep = currentStep === 0;
+
+                // Special handling for ReviewStep which has different props
+                if (isLastStep && StepComponent === ReviewStep) {
+                  return (
+                    <ReviewStep
+                      onBack={handlePrevious}
+                      onFinish={handleSubmit}
+                    />
+                  );
+                }
+
+                // Type-safe rendering for other steps
+                // Cast to generic component type to avoid prop conflicts
+                const GenericStepComponent =
+                  StepComponent as React.ComponentType<{
+                    onNext: () => void;
+                    onBack?: () => void;
+                  }>;
+
                 return (
-                  <ReviewStep onBack={handlePrevious} onFinish={handleSubmit} />
+                  <GenericStepComponent
+                    onNext={handleNext}
+                    onBack={isFirstStep ? undefined : handlePrevious}
+                  />
                 );
-              }
-
-              // Type-safe rendering for other steps
-              // Cast to generic component type to avoid prop conflicts
-              const GenericStepComponent =
-                StepComponent as React.ComponentType<{
-                  onNext: () => void;
-                  onBack?: () => void;
-                }>;
-
-              return (
-                <GenericStepComponent
-                  onNext={handleNext}
-                  onBack={isFirstStep ? undefined : handlePrevious}
-                />
-              );
-            })()}
-          </CardContent>
-        </Card>
+              })()}
+            </div>
+          </div>
+        </div>
       </div>
     </AppLayout>
   );

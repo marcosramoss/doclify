@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste PDF Export</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+</head>
+<body>
+    <div id="content" style="padding: 20px; font-family: Arial, sans-serif;">
+        <h1>Teste de Exportação PDF</h1>
+        <p>Este é um teste simples para verificar se a exportação de PDF está funcionando.</p>
+        <p><strong>Data:</strong> <span id="date"></span></p>
+        <div style="border: 1px solid #ccc; padding: 15px; margin: 20px 0;">
+            <h2>Informações do Projeto</h2>
+            <p>Título: Projeto de Teste</p>
+            <p>Status: Em Progresso</p>
+            <p>Descrição: Este é um projeto de teste para validar a funcionalidade de exportação.</p>
+        </div>
+    </div>
+    
+    <button onclick="exportToPDF()" style="padding: 10px 20px; background: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer;">Exportar PDF</button>
+    
+    <script>
+        document.getElementById('date').textContent = new Date().toLocaleDateString('pt-BR');
+        
+        async function exportToPDF() {
+            try {
+                console.log('Iniciando exportação...');
+                
+                const element = document.getElementById('content');
+                if (!element) {
+                    throw new Error('Elemento não encontrado');
+                }
+                
+                console.log('Elemento encontrado, criando canvas...');
+                const canvas = await html2canvas(element, {
+                    scale: 2,
+                    useCORS: true,
+                    allowTaint: true,
+                });
+                
+                console.log('Canvas criado, gerando PDF...');
+                const imgData = canvas.toDataURL('image/png');
+                const { jsPDF } = window.jspdf;
+                const pdf = new jsPDF('p', 'mm', 'a4');
+                
+                const imgWidth = 210;
+                const pageHeight = 295;
+                const imgHeight = (canvas.height * imgWidth) / canvas.width;
+                
+                pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
+                
+                const fileName = `teste-pdf-${new Date().toISOString().split('T')[0]}.pdf`;
+                console.log('Salvando PDF:', fileName);
+                pdf.save(fileName);
+                
+                console.log('PDF exportado com sucesso!');
+                alert('PDF exportado com sucesso!');
+            } catch (error) {
+                console.error('Erro ao exportar PDF:', error);
+                alert('Erro ao exportar PDF: ' + error.message);
+            }
+        }
+    </script>
+</body>
+</html>

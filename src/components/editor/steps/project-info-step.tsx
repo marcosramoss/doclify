@@ -98,7 +98,9 @@ export function ProjectInfoStep({ onNext, onBack }: ProjectInfoStepProps) {
           >
             <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
               <div className='md:col-span-2'>
-                <Label htmlFor='name'>Nome do Projeto *</Label>
+                <Label htmlFor='name' className='mb-2'>
+                  Nome do Projeto *
+                </Label>
                 <Input
                   id='name'
                   placeholder='Ex: Sistema de Gestão de Vendas'
@@ -113,7 +115,9 @@ export function ProjectInfoStep({ onNext, onBack }: ProjectInfoStepProps) {
               </div>
 
               <div className='md:col-span-2'>
-                <Label htmlFor='description'>Descrição</Label>
+                <Label htmlFor='description' className='mb-2'>
+                  Descrição
+                </Label>
                 <Textarea
                   id='description'
                   placeholder='Descreva brevemente o objetivo e escopo do projeto...'
@@ -133,7 +137,9 @@ export function ProjectInfoStep({ onNext, onBack }: ProjectInfoStepProps) {
               </div>
 
               <div>
-                <Label htmlFor='status'>Status do Projeto</Label>
+                <Label htmlFor='status' className='mb-2'>
+                  Status do Projeto
+                </Label>
                 <Select
                   value={watchedStatus}
                   onValueChange={value =>

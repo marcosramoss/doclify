@@ -105,88 +105,84 @@ export default function EditorPage() {
 
   return (
     <AppLayout>
-      <div className="min-h-screen bg-gray-50">
+      <div className='min-h-screen bg-gray-50'>
         {/* Header */}
-        <div className="bg-white border-b border-gray-200 sticky top-0 z-10">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex items-center justify-between h-16">
-              <div className="flex items-center space-x-4">
+        <div className='  sticky top-0 z-10'>
+          <div className='max-w-7xl mx-auto'>
+            <div className='flex items-center justify-between h-16'>
+              <div className='flex items-center space-x-4'>
                 <Button
-                  variant="ghost"
-                  size="sm"
+                  variant='ghost'
+                  size='sm'
                   onClick={handleExit}
-                  className="text-gray-600 hover:text-gray-900"
+                  className='text-gray-600 hover:text-gray-900'
                 >
-                  <ArrowLeft className="h-4 w-4 mr-2" />
+                  <ArrowLeft className='h-4 w-4 mr-2' />
                   Voltar
                 </Button>
-                <div className="flex items-center space-x-2">
-                  <FileText className="h-5 w-5 text-blue-600" />
-                  <h1 className="text-lg font-semibold text-gray-900">
+                <div className='flex items-center space-x-2'>
+                  <FileText className='h-5 w-5 text-blue-600' />
+                  <h1 className='text-lg font-semibold text-gray-900'>
                     Editor de Documento
                   </h1>
                 </div>
               </div>
-              
-              <div className="flex items-center space-x-4">
-                <div className="text-sm text-gray-600">
+
+              <div className='flex items-center space-x-4'>
+                <div className='text-sm text-gray-600'>
                   Etapa {currentStep + 1} de {steps.length}
                 </div>
-                <div className="w-32">
-                  <Progress value={progress} className="h-2" />
+                <div className='w-32'>
+                  <Progress value={progress} className='h-2' />
                 </div>
               </div>
             </div>
           </div>
         </div>
 
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-            {/* Sidebar Navigation */}
-            <div className="lg:col-span-1">
-              <Card className="sticky top-24">
-                <CardContent className="p-6">
-                  <h2 className="text-lg font-semibold text-gray-900 mb-4">
-                    Progresso
-                  </h2>
-                  <StepNavigation
-                    steps={steps.map((step, index) => ({
-                      id: step.id,
-                      title: step.title,
-                      description: step.description,
-                      status: 
-                        completedSteps.includes(index) ? 'completed' :
-                        index === currentStep ? 'current' :
-                        index < currentStep ? 'completed' : 'pending',
-                    }))}
-                    currentStep={currentStep}
-                    onStepClick={handleStepClick}
-                  />
-                  
-                  <div className="mt-6 pt-6 border-t border-gray-200">
-                    <div className="text-sm text-gray-600 mb-2">
-                      Progresso Geral
-                    </div>
-                    <Progress value={progress} className="h-2 mb-2" />
-                    <div className="text-xs text-gray-500">
-                      {Math.round(progress)}% concluído
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
+        <div className='flex h-[calc(100vh-4rem)]'>
+          {/* Sidebar Navigation */}
+          <div className='w-80 bg-white border-r border-gray-200 flex flex-col'>
+            <div className='p-6 border-b border-gray-200'>
+              <h2 className='text-lg font-semibold text-gray-900 mb-4'>
+                Progresso
+              </h2>
+              <div className='mb-4'>
+                <Progress value={progress} className='h-2 mb-2' />
+                <div className='text-sm text-gray-600'>
+                  {Math.round(progress)}% concluído
+                </div>
+              </div>
             </div>
 
-            {/* Main Content */}
-            <div className="lg:col-span-3">
-              <Card>
-                <CardContent className="p-8">
-                  <CurrentStepComponent
-                    onNext={handleNext}
-                    onBack={handleBack}
-                    onFinish={handleFinish}
-                  />
-                </CardContent>
-              </Card>
+            <div className='flex-1 overflow-y-auto p-6'>
+              <StepNavigation
+                steps={steps.map((step, index) => ({
+                  id: step.id,
+                  title: step.title,
+                  description: step.description,
+                  status: completedSteps.includes(index)
+                    ? 'completed'
+                    : index === currentStep
+                      ? 'current'
+                      : index < currentStep
+                        ? 'completed'
+                        : 'pending',
+                }))}
+                currentStep={currentStep}
+                onStepClick={handleStepClick}
+              />
+            </div>
+          </div>
+
+          {/* Main Content */}
+          <div className='flex-1 overflow-y-auto'>
+            <div className='p-8'>
+              <CurrentStepComponent
+                onNext={handleNext}
+                onBack={handleBack}
+                onFinish={handleFinish}
+              />
             </div>
           </div>
         </div>

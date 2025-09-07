@@ -9,6 +9,9 @@ import type {
   Objective,
   FunctionalRequirement,
   NonFunctionalRequirement,
+  Audience,
+  PaymentInfo,
+  Stakeholder,
   TeamFormData,
   TechnologyFormData,
   ObjectiveFormData,
@@ -523,6 +526,84 @@ export const useNonFunctionalRequirements = (projectId: string) => {
       }
 
       return data as NonFunctionalRequirement[];
+    },
+    enabled: !!user && !!projectId,
+  });
+};
+
+// Fetch audiences
+export const useAudiences = (projectId: string) => {
+  const { user } = useAuth();
+
+  return useQuery({
+    queryKey: ['audiences', projectId],
+    queryFn: async () => {
+      if (!user) return [];
+
+      const { data, error } = await supabase
+        .from('audiences')
+        .select('*')
+        .eq('project_id', projectId)
+        .order('created_at', { ascending: true });
+
+      if (error) {
+        console.error('Error fetching audiences:', error);
+        return [];
+      }
+
+      return data as Audience[];
+    },
+    enabled: !!user && !!projectId,
+  });
+};
+
+// Fetch payment info
+export const usePaymentInfo = (projectId: string) => {
+  const { user } = useAuth();
+
+  return useQuery({
+    queryKey: ['payment', projectId],
+    queryFn: async () => {
+      if (!user) return null;
+
+      const { data, error } = await supabase
+        .from('payment')
+        .select('*')
+        .eq('project_id', projectId)
+        .single();
+
+      if (error) {
+        console.error('Error fetching payment info:', error);
+        return null;
+      }
+
+      return data as PaymentInfo;
+    },
+    enabled: !!user && !!projectId,
+  });
+};
+
+// Fetch stakeholders
+export const useStakeholders = (projectId: string) => {
+  const { user } = useAuth();
+
+  return useQuery({
+    queryKey: ['stakeholders', projectId],
+    queryFn: async () => {
+      if (!user) return [];
+
+      const { data, error } = await supabase
+        .from('stakeholders')
+        .select('*')
+        .eq('project_id', projectId)
+        .order('created_at', { ascending: true });
+
+      if (error) {
+        console.error('Error fetching stakeholders:', error);
+        return [];
+      }
+
+      return data as Stakeholder[];
     },
     enabled: !!user && !!projectId,
   });

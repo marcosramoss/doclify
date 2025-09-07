@@ -13,6 +13,7 @@ interface AppLayoutProps {
 
 export function AppLayout({ children, title, description }: AppLayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const { isInitialized, isLoading } = useAuth();
 
   // Close sidebar on route change (mobile)
@@ -32,12 +33,18 @@ export function AppLayout({ children, title, description }: AppLayoutProps) {
   }
 
   return (
-    <div className='min-h-screen bg-gray-50 flex'>
+    <div className='min-h-screen bg-gray-50'>
       {/* Sidebar */}
-      <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+      <Sidebar
+        isOpen={sidebarOpen}
+        onClose={() => setSidebarOpen(false)}
+        onCollapse={setSidebarCollapsed}
+      />
 
       {/* Main Content */}
-      <div className='flex-1 flex flex-col'>
+      <div
+        className={`flex-1 flex flex-col transition-all duration-300 ${sidebarCollapsed ? 'md:ml-20' : 'md:ml-64'}`}
+      >
         {/* Header */}
         <Header onMenuClick={() => setSidebarOpen(true)} showMenuButton />
 

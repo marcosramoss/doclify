@@ -81,9 +81,20 @@ export default function ProjectDetailsPage() {
     if (!project) return;
 
     try {
-      await exportToPDF(project);
+      // Prepare extended project data with all related information
+      const extendedProject = {
+        ...project,
+        members: teamMembers || [],
+        technologies: technologies || [],
+        objectives: objectives || [],
+        requirements_functional: functionalRequirements || [],
+        requirements_non_functional: nonFunctionalRequirements || [],
+      };
+
+      await exportToPDF(extendedProject, 'document-content');
       toast.success('PDF exportado com sucesso!');
     } catch (error) {
+      console.error('Erro ao exportar PDF:', error);
       toast.error('Erro ao exportar PDF');
     }
   };
@@ -194,7 +205,10 @@ export default function ProjectDetailsPage() {
           </div>
         </div>
 
-        <div className='grid grid-cols-1 lg:grid-cols-3 gap-6'>
+        <div
+          id='document-content'
+          className='grid grid-cols-1 lg:grid-cols-3 gap-6'
+        >
           {/* Main Content */}
           <div className='lg:col-span-2 space-y-6'>
             {/* Project Overview */}
@@ -376,12 +390,20 @@ export default function ProjectDetailsPage() {
                         should_have: 'bg-yellow-100 text-yellow-800',
                         could_have: 'bg-blue-100 text-blue-800',
                         wont_have: 'bg-gray-100 text-gray-800',
+                        obrigatorio: 'bg-red-100 text-red-800',
+                        importante: 'bg-yellow-100 text-yellow-800',
+                        desejavel: 'bg-blue-100 text-blue-800',
+                        nao_prioritario: 'bg-gray-100 text-gray-800',
                       };
                       const priorityLabels = {
                         must_have: 'Obrigatório',
                         should_have: 'Importante',
                         could_have: 'Desejável',
                         wont_have: 'Não Prioritário',
+                        obrigatorio: 'Obrigatório',
+                        importante: 'Importante',
+                        desejavel: 'Desejável',
+                        nao_prioritario: 'Não Prioritário',
                       };
 
                       return (

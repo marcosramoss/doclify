@@ -4,7 +4,10 @@ import { ptBR } from 'date-fns/locale';
 /**
  * Format a date to a readable string
  */
-export const formatDate = (date: string | Date, pattern: string = 'dd/MM/yyyy') => {
+export const formatDate = (
+  date: string | Date,
+  pattern: string = 'dd/MM/yyyy'
+) => {
   const dateObj = typeof date === 'string' ? new Date(date) : date;
   return format(dateObj, pattern, { locale: ptBR });
 };
@@ -57,11 +60,15 @@ export const formatPriority = (priority: string) => {
     must_have: 'Obrigatório',
     should_have: 'Importante',
     could_have: 'Desejável',
-    wont_have: 'Não será feito',
+    wont_have: 'Não Prioritário',
+    obrigatorio: 'Obrigatório',
+    importante: 'Importante',
+    desejavel: 'Desejável',
+    nao_prioritario: 'Não Prioritário',
     primary: 'Primário',
     secondary: 'Secundário',
   };
-  
+
   return priorities[priority] || priority;
 };
 
@@ -81,6 +88,6 @@ export const formatCategory = (category: string) => {
     reliability: 'Confiabilidade',
     scalability: 'Escalabilidade',
   };
-  
+
   return categories[category] || category;
 };

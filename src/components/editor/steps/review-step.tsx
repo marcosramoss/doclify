@@ -22,6 +22,9 @@ import type {
   Project,
   FunctionalRequirement,
   NonFunctionalRequirement,
+  Audience,
+  PaymentInfo,
+  Stakeholder,
 } from '@/types';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
@@ -41,6 +44,7 @@ import { useProjectStore } from '@/stores/useProjectStore';
 import { format, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { toast } from 'sonner';
+import { exportToPDF, generateDocumentHTML } from '@/utils/export';
 
 interface ReviewStepProps {
   onBack: () => void;
@@ -51,6 +55,9 @@ interface ReviewStepProps {
 interface ExtendedProject extends Project {
   functional_requirements?: FunctionalRequirement[];
   non_functional_requirements?: NonFunctionalRequirement[];
+  audiences?: Audience[];
+  payment_info?: PaymentInfo;
+  stakeholders?: Stakeholder[];
 }
 
 export function ReviewStep({ onBack, onFinish }: ReviewStepProps) {
@@ -104,8 +111,59 @@ export function ReviewStep({ onBack, onFinish }: ReviewStepProps) {
     }
   };
 
-  const exportDocument = () => {
-    toast.success('Exportação iniciada! O download começará em breve.');
+  const exportDocument = async () => {
+    if (!project) {
+      toast.error('Nenhum projeto encontrado para exportar');
+      return;
+    }
+
+    try {
+      // Create temporary element with project content
+      const tempDiv = document.createElement('div');
+      tempDiv.id = 'temp-document-content';
+      tempDiv.style.position = 'absolute';
+      tempDiv.style.left = '-9999px';
+      tempDiv.style.top = '-9999px';
+      tempDiv.style.width = '210mm';
+      tempDiv.style.padding = '20px';
+      tempDiv.style.backgroundColor = 'white';
+      tempDiv.style.fontFamily = 'Arial, sans-serif';
+
+      // Generate HTML content using the same function as dashboard
+      const extendedProject = {
+        ...project,
+        members: project.members || [],
+        technologies: project.technologies || [],
+        objectives: project.objectives || [],
+        milestones: project.milestones || [],
+        audiences: project.audiences || [],
+        functional_requirements: project.functional_requirements || [],
+        non_functional_requirements: project.non_functional_requirements || [],
+        payment_info: project.payment_info,
+        stakeholders: project.stakeholders || [],
+      };
+
+      tempDiv.innerHTML = generateDocumentHTML(extendedProject);
+      document.body.appendChild(tempDiv);
+
+      // Export to PDF
+      const result = await exportToPDF(
+        extendedProject,
+        'temp-document-content'
+      );
+
+      // Clean up
+      document.body.removeChild(tempDiv);
+
+      if (result.success) {
+        toast.success(`PDF exportado com sucesso! Arquivo: ${result.fileName}`);
+      } else {
+        toast.error(`Erro ao exportar PDF: ${result.error}`);
+      }
+    } catch (error) {
+      console.error('Erro ao exportar PDF:', error);
+      toast.error('Erro ao exportar PDF');
+    }
   };
 
   const shareDocument = () => {
@@ -623,19 +681,30 @@ export function ReviewStep({ onBack, onFinish }: ReviewStepProps) {
                           <div className='flex items-center gap-2'>
                             <Badge
                               variant={
-                                req.priority === 'must_have'
+                                req.priority === 'must_have' ||
+                                req.priority === 'obrigatorio'
                                   ? 'destructive'
-                                  : req.priority === 'should_have'
+                                  : req.priority === 'should_have' ||
+                                      req.priority === 'importante'
                                     ? 'default'
-                                    : req.priority === 'could_have'
+                                    : req.priority === 'could_have' ||
+                                        req.priority === 'desejavel'
                                       ? 'secondary'
                                       : 'outline'
                               }
                             >
-                              {req.priority === 'must_have' && 'Must Have'}
-                              {req.priority === 'should_have' && 'Should Have'}
-                              {req.priority === 'could_have' && 'Could Have'}
-                              {req.priority === 'wont_have' && "Won't Have"}
+                              {(req.priority === 'must_have' ||
+                                req.priority === 'obrigatorio') &&
+                                'Obrigatório'}
+                              {(req.priority === 'should_have' ||
+                                req.priority === 'importante') &&
+                                'Importante'}
+                              {(req.priority === 'could_have' ||
+                                req.priority === 'desejavel') &&
+                                'Desejável'}
+                              {(req.priority === 'wont_have' ||
+                                req.priority === 'nao_prioritario') &&
+                                'Não Prioritário'}
                             </Badge>
                           </div>
                         </div>

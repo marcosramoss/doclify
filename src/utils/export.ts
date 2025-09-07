@@ -282,7 +282,7 @@ export const generateDocumentHTML = (project: ExtendedProject) => {
               .map(
                 (req, index) => `
               <li style="margin-bottom: 15px;">
-                <strong>RF${String(index + 1).padStart(2, '0')} - ${req.title}</strong> (${req.priority === 'must_have' ? 'Obrigatório' : req.priority === 'should_have' ? 'Importante' : req.priority === 'could_have' ? 'Desejável' : 'Não será feito'})
+                <strong>RF${String(index + 1).padStart(2, '0')} - ${req.title}</strong> (${req.priority === 'must_have' || req.priority === 'obrigatorio' ? 'Obrigatório' : req.priority === 'should_have' || req.priority === 'importante' ? 'Importante' : req.priority === 'could_have' || req.priority === 'desejavel' ? 'Desejável' : 'Não será feito'})
                 <br><span style="color: #666; font-size: 14px;">${req.description}</span>
                 ${req.acceptance_criteria ? `<br><span style="color: #666; font-size: 14px;"><strong>Critérios de Aceitação:</strong> ${req.acceptance_criteria}</span>` : ''}
               </li>
