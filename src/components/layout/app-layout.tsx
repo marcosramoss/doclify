@@ -69,7 +69,7 @@ export function AppLayout({ children, title, description }: AppLayoutProps) {
           )}
 
           {/* Page Body */}
-          <div className='px-4 py-6'>{children}</div>
+          <div>{children}</div>
         </main>
       </div>
     </div>

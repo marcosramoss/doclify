@@ -409,21 +409,12 @@ export default function NewProjectPage() {
       <div className='min-h-screen bg-gray-50'>
         {/* Header */}
         <div className='sticky top-0 z-10 bg-white border-b'>
-          <div className='max-w-7xl mx-auto'>
+          <div className='max-w-7xl'>
             <div className='flex items-center justify-between h-14 sm:h-16 px-3 sm:px-4'>
               <div className='flex items-center space-x-2 sm:space-x-4'>
-                <Button
-                  variant='ghost'
-                  size='sm'
-                  onClick={() => router.push('/dashboard')}
-                  className='text-gray-600 hover:text-gray-900 p-2 sm:px-3'
-                >
-                  <ArrowLeft className='h-4 w-4 sm:mr-2' />
-                  <span className='hidden sm:inline'>Voltar</span>
-                </Button>
-                <div className='flex items-center space-x-1 sm:space-x-2'>
-                  <FileText className='h-4 w-4 sm:h-5 sm:w-5 text-blue-600' />
-                  <h1 className='text-base sm:text-lg font-semibold text-gray-900'>
+                <div className='flex items-center sm:ml-3 space-x-1 sm:space-x-2'>
+                  <FileText className='h-4 w-4 sm:h-5  sm:w-5 text-blue-600' />
+                  <h1 className='text-base sm:text-lg  font-semibold text-gray-900'>
                     <span className='hidden sm:inline'>Novo Projeto</span>
                     <span className='sm:hidden'>Projeto</span>
                   </h1>
@@ -436,7 +427,10 @@ export default function NewProjectPage() {
                   {currentStep + 1}/{steps.length}
                 </div>
                 <div className='w-16 sm:w-32'>
-                  <Progress value={progress} className='h-1.5 sm:h-2' />
+                  <Progress
+                    value={progress}
+                    className='h-1.5 md:hidden sm:h-2'
+                  />
                 </div>
               </div>
             </div>
@@ -445,7 +439,7 @@ export default function NewProjectPage() {
 
         {/* Step Navigation - Horizontal Layout */}
         <div className='bg-white border-b border-gray-200'>
-          <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'>
+          <div className='max-w-7xl px-4 sm:px-6 lg:px-8'>
             <div className='py-4'>
               <div className='flex items-center justify-between mb-4'>
                 <h2 className='text-lg font-semibold text-gray-900'>
@@ -516,7 +510,7 @@ export default function NewProjectPage() {
 
         {/* Main Content */}
         <div className='flex-1 overflow-y-auto bg-gray-50'>
-          <div className='max-w-7xl mx-auto p-4 sm:p-6 lg:p-8'>
+          <div className='max-w-7xl p-4 sm:p-6 lg:p-8'>
             {(() => {
               const StepComponent = steps[currentStep].component;
               const isLastStep = currentStep === steps.length - 1;

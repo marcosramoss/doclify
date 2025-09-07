@@ -112,32 +112,27 @@ export default function EditorPage() {
       <div className='min-h-screen bg-gray-50'>
         {/* Header */}
         <div className=' bg-white border-b border-gray-200 sticky top-0 z-10'>
-          <div className='max-w-7xl mx-auto'>
+          <div className='max-w-7xl'>
             <div className='flex items-center justify-between h-16'>
               <div className='flex items-center space-x-4'>
-                <Button
-                  variant='ghost'
-                  size='sm'
-                  onClick={handleExit}
-                  className='text-gray-600 hover:text-gray-900'
-                >
-                  <ArrowLeft className='h-4 w-4 mr-2' />
-                  Voltar
-                </Button>
-                <div className='flex items-center space-x-2'>
+                <div className='flex ml-3 sm:ml-7 items-center space-x-2'>
                   <FileText className='h-5 w-5 text-blue-600' />
-                  <h1 className='text-lg font-semibold text-gray-900'>
+                  <h1 className='text-base sm:text-lg  font-semibold text-gray-900'>
                     Editor de Documento
                   </h1>
                 </div>
               </div>
 
-              <div className='flex items-center space-x-4'>
-                <div className='text-sm text-gray-600'>
-                  Etapa {currentStep + 1} de {steps.length}
+              <div className='flex items-center space-x-2 sm:space-x-4'>
+                <div className='text-xs sm:text-sm text-gray-600 hidden xs:block'>
+                  <span className='hidden sm:inline'>Etapa </span>
+                  {currentStep + 1}/{steps.length}
                 </div>
-                <div className='w-32'>
-                  <Progress value={progress} className='h-2' />
+                <div className='w-16 sm:w-32'>
+                  <Progress
+                    value={progress}
+                    className='h-1.5 md:hidden sm:h-2'
+                  />
                 </div>
               </div>
             </div>
@@ -146,7 +141,7 @@ export default function EditorPage() {
 
         {/* Step Navigation - Horizontal Layout */}
         <div className='bg-white border-b border-gray-200'>
-          <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'>
+          <div className='max-w-7xl px-4 sm:px-6 lg:px-8'>
             <div className='py-4'>
               <div className='flex items-center justify-between mb-4'>
                 <h2 className='text-lg font-semibold text-gray-900'>
@@ -218,7 +213,7 @@ export default function EditorPage() {
 
         {/* Main Content */}
         <div className='flex-1 overflow-y-auto bg-gray-50'>
-          <div className='max-w-7xl mx-auto p-4 sm:p-6 lg:p-8'>
+          <div className='max-w-7xl p-4 sm:p-6 lg:p-8'>
             <CurrentStepComponent
               onNext={handleNext}
               onBack={handleBack}

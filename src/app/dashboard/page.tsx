@@ -305,7 +305,7 @@ export default function DashboardPage() {
       <div className='min-h-screen bg-gray-50'>
         {/* Header */}
         <div className='sticky top-0 z-10 bg-white border-b'>
-          <div className='max-w-7xl mx-auto'>
+          <div className='max-w-7xl '>
             <div className='flex items-center justify-between h-14 sm:h-16 px-3 sm:px-4'>
               <div className='flex items-center space-x-2 sm:space-x-4'>
                 <div className='flex items-center space-x-1 sm:space-x-2'>
@@ -316,11 +316,7 @@ export default function DashboardPage() {
                 </div>
               </div>
 
-              <div className='hidden sm:flex items-center space-x-4'>
-                <div className='text-xs sm:text-sm text-gray-600'>
-                  Gerencie seus projetos de documentação
-                </div>
-              </div>
+              <div className='hidden sm:flex items-center space-x-4'></div>
             </div>
           </div>
         </div>
