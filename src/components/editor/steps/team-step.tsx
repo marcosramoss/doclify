@@ -106,10 +106,10 @@ export function TeamStep({ onNext, onBack }: TeamStepProps) {
   return (
     <div className='space-y-6'>
       <div>
-        <h2 className='text-2xl font-bold text-gray-900 mb-2'>
+        <h2 className='text-lg sm:text-xl lg:text-2xl font-bold text-gray-900 mb-2'>
           Equipe do Projeto
         </h2>
-        <p className='text-gray-600'>
+        <p className='text-sm sm:text-base text-gray-600'>
           Adicione os membros da equipe que participarão do projeto. Isso ajuda
           na documentação de responsabilidades.
         </p>
@@ -129,9 +129,13 @@ export function TeamStep({ onNext, onBack }: TeamStepProps) {
                   : `${fields.length} membro${fields.length > 1 ? 's' : ''} adicionado${fields.length > 1 ? 's' : ''}`}
               </CardDescription>
             </div>
-            <Button onClick={addTeamMember} size='sm'>
-              <Plus className='h-4 w-4 mr-2' />
-              Adicionar Membro
+            <Button
+              onClick={addTeamMember}
+              size='sm'
+              className='text-xs sm:text-sm'
+            >
+              <Plus className='h-4 w-4 mr-1 sm:mr-2' />
+              <span className='hidden sm:inline'>Adicionar </span>Membro
             </Button>
           </div>
         </CardHeader>
@@ -156,7 +160,7 @@ export function TeamStep({ onNext, onBack }: TeamStepProps) {
               <div className='space-y-4'>
                 {fields.map((field, index) => (
                   <Card key={field.id} className='p-4'>
-                    <div className='grid grid-cols-1 md:grid-cols-3 gap-4'>
+                    <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4'>
                       <div>
                         <Label htmlFor={`members.${index}.name`}>Nome *</Label>
                         <Input

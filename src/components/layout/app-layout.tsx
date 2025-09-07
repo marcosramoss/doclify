@@ -26,7 +26,7 @@ export function AppLayout({ children, title, description }: AppLayoutProps) {
       <div className='min-h-screen bg-gray-50 flex items-center justify-center'>
         <div className='text-center'>
           <div className='animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4' />
-          <p className='text-gray-600'>Carregando...</p>
+          <p className='text-responsive-sm text-gray-600'>Carregando...</p>
         </div>
       </div>
     );
@@ -55,11 +55,15 @@ export function AppLayout({ children, title, description }: AppLayoutProps) {
             <div className='bg-white border-b'>
               <div className='px-4 py-6'>
                 {title && (
-                  <h1 className='text-2xl font-bold text-gray-900 mb-2'>
+                  <h1 className='text-responsive-2xl font-bold text-gray-900 mb-2'>
                     {title}
                   </h1>
                 )}
-                {description && <p className='text-gray-600'>{description}</p>}
+                {description && (
+                  <p className='text-responsive-sm text-gray-600 prose-mobile'>
+                    {description}
+                  </p>
+                )}
               </div>
             </div>
           )}

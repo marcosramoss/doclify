@@ -126,7 +126,7 @@ function LoginForm() {
               <div className='flex items-center justify-between'>
                 <Link
                   href='/auth/reset-password'
-                  className='text-sm text-blue-600 hover:text-blue-500'
+                  className='text-responsive-xs text-blue-600 hover:text-blue-500'
                 >
                   Esqueceu a senha?
                 </Link>
@@ -150,7 +150,7 @@ function LoginForm() {
                   <div className='w-full border-t border-gray-300' />
                 </div>
                 <div className='relative flex justify-center text-sm'>
-                  <span className='px-2 bg-white text-gray-500'>
+                  <span className='px-2 bg-white text-gray-500 text-responsive-xs'>
                     Não tem uma conta?
                   </span>
                 </div>
@@ -168,7 +168,10 @@ function LoginForm() {
         </Card>
 
         <div className='mt-8 text-center'>
-          <Link href='/' className='text-sm text-gray-600 hover:text-gray-500'>
+          <Link
+            href='/'
+            className='text-responsive-xs text-gray-600 hover:text-gray-500'
+          >
             ← Voltar para o início
           </Link>
         </div>

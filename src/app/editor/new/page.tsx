@@ -15,7 +15,7 @@ import { ReviewStep } from '@/components/editor/steps/review-step';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
-import { ArrowLeft, FileText } from 'lucide-react';
+import { ArrowLeft, FileText, Check } from 'lucide-react';
 import { toast } from 'sonner';
 import {
   useCreateProject,
@@ -26,6 +26,7 @@ import {
   useCreateNonFunctionalRequirements,
 } from '@/hooks/useProjects';
 import { useProjectStore } from '@/stores/useProjectStore';
+import { cn } from '@/lib/utils';
 import type {
   Project,
   Technology,
@@ -409,114 +410,140 @@ export default function NewProjectPage() {
         {/* Header */}
         <div className='sticky top-0 z-10 bg-white border-b'>
           <div className='max-w-7xl mx-auto'>
-            <div className='flex items-center justify-between h-16 px-4'>
-              <div className='flex items-center space-x-4'>
+            <div className='flex items-center justify-between h-14 sm:h-16 px-3 sm:px-4'>
+              <div className='flex items-center space-x-2 sm:space-x-4'>
                 <Button
                   variant='ghost'
                   size='sm'
                   onClick={() => router.push('/dashboard')}
-                  className='text-gray-600 hover:text-gray-900'
+                  className='text-gray-600 hover:text-gray-900 p-2 sm:px-3'
                 >
-                  <ArrowLeft className='h-4 w-4 mr-2' />
-                  Voltar
+                  <ArrowLeft className='h-4 w-4 sm:mr-2' />
+                  <span className='hidden sm:inline'>Voltar</span>
                 </Button>
-                <div className='flex items-center space-x-2'>
-                  <FileText className='h-5 w-5 text-blue-600' />
-                  <h1 className='text-lg font-semibold text-gray-900'>
-                    Novo Projeto
+                <div className='flex items-center space-x-1 sm:space-x-2'>
+                  <FileText className='h-4 w-4 sm:h-5 sm:w-5 text-blue-600' />
+                  <h1 className='text-base sm:text-lg font-semibold text-gray-900'>
+                    <span className='hidden sm:inline'>Novo Projeto</span>
+                    <span className='sm:hidden'>Projeto</span>
                   </h1>
                 </div>
               </div>
 
-              <div className='flex items-center space-x-4'>
-                <div className='text-sm text-gray-600'>
-                  Etapa {currentStep + 1} de {steps.length}
+              <div className='flex items-center space-x-2 sm:space-x-4'>
+                <div className='text-xs sm:text-sm text-gray-600 hidden xs:block'>
+                  <span className='hidden sm:inline'>Etapa </span>
+                  {currentStep + 1}/{steps.length}
                 </div>
-                <div className='w-32'>
-                  <Progress value={progress} className='h-2' />
+                <div className='w-16 sm:w-32'>
+                  <Progress value={progress} className='h-1.5 sm:h-2' />
                 </div>
               </div>
             </div>
           </div>
         </div>
 
-        <div className='flex h-[calc(100vh-4rem)]'>
-          {/* Sidebar Navigation */}
-          <div className='w-80 bg-white border-r border-gray-200 flex flex-col'>
-            <div className='p-6 border-b border-gray-200'>
-              <h2 className='text-lg font-semibold text-gray-900 mb-4'>
-                Progresso
-              </h2>
-              <div className='mb-4'>
-                <Progress value={progress} className='h-2 mb-2' />
-                <div className='text-sm text-gray-600'>
-                  {Math.round(progress)}% concluído
-                </div>
-              </div>
-            </div>
-
-            <div className='flex-1 overflow-y-auto p-6'>
-              <StepNavigation
-                steps={steps.map((step, index) => ({
-                  id: step.id,
-                  title: step.title,
-                  description: step.description,
-                  status:
-                    index < currentStep
-                      ? 'completed'
-                      : index === currentStep
-                        ? 'current'
-                        : 'pending',
-                }))}
-                currentStep={currentStep}
-                onStepClick={setCurrentStep}
-              />
-            </div>
-          </div>
-
-          {/* Main Content */}
-          <div className='flex-1 overflow-y-auto'>
-            <div className='p-8'>
-              <div className='mb-6'>
-                <h2 className='text-lg font-semibold mb-2'>
+        {/* Step Navigation - Horizontal Layout */}
+        <div className='bg-white border-b border-gray-200'>
+          <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'>
+            <div className='py-4'>
+              <div className='flex items-center justify-between mb-4'>
+                <h2 className='text-lg font-semibold text-gray-900'>
                   {steps[currentStep].title}
                 </h2>
-                <p className='text-gray-600'>
-                  {steps[currentStep].description}
-                </p>
+                <div className='hidden sm:flex items-center space-x-4'>
+                  <div className='text-sm  text-gray-600'>
+                    {Math.round(progress)}% concluído
+                  </div>
+                  <div className='w-32'>
+                    <Progress value={progress} className='h-2' />
+                  </div>
+                </div>
               </div>
 
-              {(() => {
-                const StepComponent = steps[currentStep].component;
-                const isLastStep = currentStep === steps.length - 1;
-                const isFirstStep = currentStep === 0;
+              <p className='text-gray-600 mb-4'>
+                {steps[currentStep].description}
+              </p>
 
-                // Special handling for ReviewStep which has different props
-                if (isLastStep && StepComponent === ReviewStep) {
+              {/* Horizontal Steps */}
+              <div className='flex space-x-2 overflow-x-auto pb-2'>
+                {steps.map((step, index) => {
+                  const isActive = index === currentStep;
+                  const isCompleted = index < currentStep;
                   return (
-                    <ReviewStep
-                      onBack={handlePrevious}
-                      onFinish={handleSubmit}
-                    />
+                    <button
+                      key={step.id}
+                      onClick={() => setCurrentStep(index)}
+                      className={cn(
+                        'flex-shrink-0 flex items-center space-x-2 px-3 py-2 rounded-lg border text-sm font-medium transition-colors',
+                        isActive && 'bg-blue-50 text-blue-700 border-blue-200',
+                        isCompleted &&
+                          !isActive &&
+                          'bg-green-50 text-green-700 border-green-200',
+                        !isActive &&
+                          !isCompleted &&
+                          'border-gray-200 text-gray-500 bg-white hover:bg-gray-50'
+                      )}
+                    >
+                      <div
+                        className={cn(
+                          'w-6 h-6 rounded-full border-2 flex items-center justify-center text-xs',
+                          isActive && 'bg-blue-600 text-white border-blue-600',
+                          isCompleted &&
+                            !isActive &&
+                            'bg-green-600 text-white border-green-600',
+                          !isActive &&
+                            !isCompleted &&
+                            'border-gray-300 text-gray-500'
+                        )}
+                      >
+                        {isCompleted && !isActive ? (
+                          <Check className='h-3 w-3' />
+                        ) : (
+                          index + 1
+                        )}
+                      </div>
+                      <span className='hidden sm:inline whitespace-nowrap'>
+                        {step.title}
+                      </span>
+                    </button>
                   );
-                }
-
-                // Type-safe rendering for other steps
-                // Cast to generic component type to avoid prop conflicts
-                const GenericStepComponent =
-                  StepComponent as React.ComponentType<{
-                    onNext: () => void;
-                    onBack?: () => void;
-                  }>;
-
-                return (
-                  <GenericStepComponent
-                    onNext={handleNext}
-                    onBack={isFirstStep ? undefined : handlePrevious}
-                  />
-                );
-              })()}
+                })}
+              </div>
             </div>
+          </div>
+        </div>
+
+        {/* Main Content */}
+        <div className='flex-1 overflow-y-auto bg-gray-50'>
+          <div className='max-w-7xl mx-auto p-4 sm:p-6 lg:p-8'>
+            {(() => {
+              const StepComponent = steps[currentStep].component;
+              const isLastStep = currentStep === steps.length - 1;
+              const isFirstStep = currentStep === 0;
+
+              // Special handling for ReviewStep which has different props
+              if (isLastStep && StepComponent === ReviewStep) {
+                return (
+                  <ReviewStep onBack={handlePrevious} onFinish={handleSubmit} />
+                );
+              }
+
+              // Type-safe rendering for other steps
+              // Cast to generic component type to avoid prop conflicts
+              const GenericStepComponent =
+                StepComponent as React.ComponentType<{
+                  onNext: () => void;
+                  onBack?: () => void;
+                }>;
+
+              return (
+                <GenericStepComponent
+                  onNext={handleNext}
+                  onBack={isFirstStep ? undefined : handlePrevious}
+                />
+              );
+            })()}
           </div>
         </div>
       </div>

@@ -10,10 +10,12 @@ import {
   FileText,
   Calendar,
   Users,
-  Trash2,
-  Download,
-  Edit,
   Eye,
+  Edit,
+  Trash2,
+  Grid3X3,
+  List,
+  Download,
 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -46,22 +48,20 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
 import { AppLayout } from '@/components/layout/app-layout';
 import { useProjects } from '@/hooks/useProjects';
 import { formatDate } from '@/utils/format';
 import { exportToPDF, generateDocumentHTML } from '@/utils/export';
 import { supabase } from '@/lib/supabase/client';
-import {
-  Project,
-  TeamMember,
-  Technology,
-  Objective,
-  Milestone,
-  FunctionalRequirement,
-  NonFunctionalRequirement,
-  Audience,
-  Stakeholder,
-} from '@/types';
+import { Project } from '@/types';
 
 const statusColors = {
   draft: 'bg-gray-100 text-gray-800',
@@ -80,6 +80,7 @@ const statusLabels = {
 export default function DashboardPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [deleteProjectId, setDeleteProjectId] = useState<string | null>(null);
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const { projects, isLoading, error, deleteProject, isDeleting } =
     useProjects();
 
@@ -104,7 +105,7 @@ export default function DashboardPage() {
       await deleteProject(deleteProjectId);
       toast.success('Projeto excluído com sucesso!');
       setDeleteProjectId(null);
-    } catch (error) {
+    } catch {
       toast.error('Erro ao excluir projeto');
     }
   };
@@ -125,7 +126,7 @@ export default function DashboardPage() {
           .eq('project_id', project.id)
           .single();
         paymentData = data;
-      } catch (error) {
+      } catch {
         console.log('No payment info found for project:', project.id);
       }
 
@@ -305,18 +306,18 @@ export default function DashboardPage() {
         {/* Header */}
         <div className='sticky top-0 z-10 bg-white border-b'>
           <div className='max-w-7xl mx-auto'>
-            <div className='flex items-center justify-between h-16 px-4'>
-              <div className='flex items-center space-x-4'>
-                <div className='flex items-center space-x-2'>
-                  <FileText className='h-5 w-5 text-blue-600' />
-                  <h1 className='text-lg font-semibold text-gray-900'>
+            <div className='flex items-center justify-between h-14 sm:h-16 px-3 sm:px-4'>
+              <div className='flex items-center space-x-2 sm:space-x-4'>
+                <div className='flex items-center space-x-1 sm:space-x-2'>
+                  <FileText className='h-4 w-4 sm:h-5 sm:w-5 text-blue-600' />
+                  <h1 className='text-base sm:text-lg font-semibold text-gray-900'>
                     Dashboard
                   </h1>
                 </div>
               </div>
 
-              <div className='flex items-center space-x-4'>
-                <div className='text-sm text-gray-600'>
+              <div className='hidden sm:flex items-center space-x-4'>
+                <div className='text-xs sm:text-sm text-gray-600'>
                   Gerencie seus projetos de documentação
                 </div>
               </div>
@@ -324,63 +325,82 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        <div className='max-w-7xl mx-auto py-8 px-4'>
-          <div className='space-y-6'>
-            {/* Stats Cards */}
-            <div className='grid grid-cols-1 md:grid-cols-4 gap-4'>
-              <Card>
-                <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
-                  <CardTitle className='text-sm font-medium'>
-                    Total de Projetos
-                  </CardTitle>
-                  <FileText className='h-4 w-4 text-muted-foreground' />
-                </CardHeader>
-                <CardContent>
-                  <div className='text-2xl font-bold'>{stats.total}</div>
-                </CardContent>
-              </Card>
+        <div className='flex flex-col lg:flex-row h-[calc(100vh-3.5rem)] sm:h-[calc(100vh-4rem)]'>
+          {/* Sidebar */}
+          <div className='w-full lg:w-80 bg-white border-b lg:border-r lg:border-b-0 border-gray-200 flex flex-col'>
+            <div className='p-4 sm:p-6 border-b border-gray-200'>
+              <h2 className='text-base sm:text-lg font-semibold text-gray-900 mb-3 sm:mb-4'>
+                Estatísticas
+              </h2>
 
-              <Card>
-                <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
-                  <CardTitle className='text-sm font-medium'>
-                    Rascunhos
-                  </CardTitle>
-                  <FileText className='h-4 w-4 text-muted-foreground' />
-                </CardHeader>
-                <CardContent>
-                  <div className='text-2xl font-bold'>{stats.draft}</div>
-                </CardContent>
-              </Card>
+              {/* Stats Cards */}
+              <div className='grid grid-cols-2 lg:grid-cols-1 gap-2 lg:space-y-2 lg:grid-cols-none'>
+                <Card className='p-2 sm:p-3'>
+                  <div className='flex items-center justify-between'>
+                    <div>
+                      <div className='text-xs font-medium text-gray-600'>
+                        Total de Projetos
+                      </div>
+                      <div className='text-base sm:text-lg font-bold'>
+                        {stats.total}
+                      </div>
+                    </div>
+                    <FileText className='h-3 w-3 text-muted-foreground flex-shrink-0' />
+                  </div>
+                </Card>
 
-              <Card>
-                <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
-                  <CardTitle className='text-sm font-medium'>
-                    Em Progresso
-                  </CardTitle>
-                  <FileText className='h-4 w-4 text-muted-foreground' />
-                </CardHeader>
-                <CardContent>
-                  <div className='text-2xl font-bold'>{stats.in_progress}</div>
-                </CardContent>
-              </Card>
+                <Card className='p-2 sm:p-3'>
+                  <div className='flex items-center justify-between'>
+                    <div>
+                      <div className='text-xs font-medium text-gray-600'>
+                        Rascunhos
+                      </div>
+                      <div className='text-base sm:text-lg font-bold'>
+                        {stats.draft}
+                      </div>
+                    </div>
+                    <FileText className='h-3 w-3 text-muted-foreground flex-shrink-0' />
+                  </div>
+                </Card>
 
-              <Card>
-                <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
-                  <CardTitle className='text-sm font-medium'>
-                    Concluídos
-                  </CardTitle>
-                  <FileText className='h-4 w-4 text-muted-foreground' />
-                </CardHeader>
-                <CardContent>
-                  <div className='text-2xl font-bold'>{stats.completed}</div>
-                </CardContent>
-              </Card>
+                <Card className='p-2 sm:p-3'>
+                  <div className='flex items-center justify-between'>
+                    <div>
+                      <div className='text-xs font-medium text-gray-600'>
+                        Em Progresso
+                      </div>
+                      <div className='text-base sm:text-lg font-bold'>
+                        {stats.in_progress}
+                      </div>
+                    </div>
+                    <FileText className='h-3 w-3 text-muted-foreground flex-shrink-0' />
+                  </div>
+                </Card>
+
+                <Card className='p-2 sm:p-3'>
+                  <div className='flex items-center justify-between'>
+                    <div>
+                      <div className='text-xs font-medium text-gray-600'>
+                        Concluídos
+                      </div>
+                      <div className='text-base sm:text-lg font-bold'>
+                        {stats.completed}
+                      </div>
+                    </div>
+                    <FileText className='h-3 w-3 text-muted-foreground flex-shrink-0' />
+                  </div>
+                </Card>
+              </div>
             </div>
 
-            {/* Actions Bar */}
-            <div className='flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between'>
-              <div className='flex flex-1 items-center space-x-2'>
-                <div className='relative flex-1 max-w-sm'>
+            <div className='flex-1 overflow-y-auto p-4 sm:p-6'>
+              <h3 className='text-sm sm:text-base font-medium text-gray-900 mb-3 sm:mb-4'>
+                Filtros e Busca
+              </h3>
+
+              {/* Search */}
+              <div className='space-y-3 sm:space-y-4'>
+                <div className='relative'>
                   <Search className='absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4' />
                   <Input
                     placeholder='Buscar projetos...'
@@ -389,178 +409,358 @@ export default function DashboardPage() {
                     className='pl-10'
                   />
                 </div>
-                <Button variant='outline' size='sm'>
+
+                <Button variant='outline' size='sm' className='w-full'>
                   <Filter className='h-4 w-4 mr-2' />
-                  Filtros
+                  Filtros Avançados
                 </Button>
-              </div>
 
-              <Button asChild>
-                <Link href='/editor/new'>
-                  <Plus className='h-4 w-4 mr-2' />
-                  Novo Projeto
-                </Link>
-              </Button>
+                <Button asChild className='w-full text-xs sm:text-sm'>
+                  <Link href='/editor/new'>
+                    <Plus className='h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2' />
+                    Novo Projeto
+                  </Link>
+                </Button>
+
+                <div className='mt-4 sm:mt-6 pt-4 sm:pt-6 border-t border-gray-200'>
+                  <h4 className='text-xs sm:text-sm font-medium text-gray-900 mb-2 sm:mb-3'>
+                    Visualização
+                  </h4>
+                  <div className='flex gap-2'>
+                    <Button
+                      variant={viewMode === 'grid' ? 'default' : 'outline'}
+                      size='sm'
+                      onClick={() => setViewMode('grid')}
+                      className='flex-1 text-xs sm:text-sm'
+                    >
+                      <Grid3X3 className='h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2' />
+                      <span className='hidden sm:inline'>Grid</span>
+                    </Button>
+                    <Button
+                      variant={viewMode === 'list' ? 'default' : 'outline'}
+                      size='sm'
+                      onClick={() => setViewMode('list')}
+                      className='flex-1 text-xs sm:text-sm'
+                    >
+                      <List className='h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2' />
+                      <span className='hidden sm:inline'>Lista</span>
+                    </Button>
+                  </div>
+                </div>
+              </div>
             </div>
+          </div>
 
-            {/* Projects Grid */}
-            {filteredProjects.length === 0 ? (
-              <div className='text-center py-12'>
-                <FileText className='h-12 w-12 text-gray-400 mx-auto mb-4' />
-                <h3 className='text-lg font-medium text-gray-900 mb-2'>
-                  {searchTerm
-                    ? 'Nenhum projeto encontrado'
-                    : 'Nenhum projeto ainda'}
-                </h3>
-                <p className='text-gray-600 mb-6'>
-                  {searchTerm
-                    ? 'Tente ajustar os termos de busca'
-                    : 'Comece criando seu primeiro projeto de documentação'}
+          {/* Main Content */}
+          <div className='flex-1 overflow-y-auto'>
+            <div className='p-4 sm:p-6'>
+              <div className='mb-4 sm:mb-6'>
+                <h1 className='text-xl sm:text-2xl font-bold text-gray-900'>
+                  Meus Projetos
+                </h1>
+                <p className='text-gray-600 mt-1'>
+                  Gerencie e acompanhe seus projetos de documentação
                 </p>
-                {!searchTerm && (
-                  <Button asChild>
-                    <Link href='/editor/new'>
-                      <Plus className='h-4 w-4 mr-2' />
-                      Criar Primeiro Projeto
-                    </Link>
-                  </Button>
-                )}
               </div>
-            ) : (
-              <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6'>
-                {filteredProjects.map(project => (
-                  <Card
-                    key={project.id}
-                    className='hover:shadow-md transition-shadow'
-                  >
-                    <CardHeader className='pb-3'>
-                      <div className='flex items-start justify-between'>
-                        <div className='space-y-1 flex-1'>
-                          <CardTitle className='text-lg line-clamp-1'>
-                            <Link
-                              href={`/editor/${project.id}`}
-                              className='hover:text-blue-600 transition-colors'
-                            >
-                              {project.title}
-                            </Link>
-                          </CardTitle>
-                          {project.description && (
-                            <CardDescription className='line-clamp-2'>
-                              {project.description}
-                            </CardDescription>
-                          )}
+
+              {/* Projects Content */}
+              {filteredProjects.length === 0 ? (
+                <div className='text-center py-8 sm:py-12'>
+                  <FileText className='h-8 w-8 sm:h-12 sm:w-12 text-gray-400 mx-auto mb-3 sm:mb-4' />
+                  <h3 className='text-base sm:text-lg font-medium text-gray-900 mb-2'>
+                    {searchTerm
+                      ? 'Nenhum projeto encontrado'
+                      : 'Nenhum projeto ainda'}
+                  </h3>
+                  <p className='text-sm sm:text-base text-gray-600 mb-4 sm:mb-6 px-4'>
+                    {searchTerm
+                      ? 'Tente ajustar os termos de busca'
+                      : 'Comece criando seu primeiro projeto de documentação'}
+                  </p>
+                  {!searchTerm && (
+                    <Button asChild size='sm' className='text-sm'>
+                      <Link href='/editor/new'>
+                        <Plus className='h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2' />
+                        Criar Primeiro Projeto
+                      </Link>
+                    </Button>
+                  )}
+                </div>
+              ) : viewMode === 'grid' ? (
+                <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 max-w-7xl'>
+                  {filteredProjects.map(project => (
+                    <Card
+                      key={project.id}
+                      className='hover:shadow-md transition-shadow'
+                    >
+                      <CardHeader className='pb-2 sm:pb-3 p-3 sm:p-6'>
+                        <div className='flex items-start justify-between gap-2'>
+                          <div className='space-y-1 flex-1 min-w-0'>
+                            <CardTitle className='text-sm sm:text-base lg:text-lg line-clamp-1'>
+                              <Link
+                                href={`/editor/${project.id}`}
+                                className='hover:text-blue-600 transition-colors'
+                              >
+                                {project.title}
+                              </Link>
+                            </CardTitle>
+                            {project.description && (
+                              <CardDescription className='line-clamp-2 text-xs sm:text-sm'>
+                                {project.description}
+                              </CardDescription>
+                            )}
+                          </div>
+
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button
+                                variant='ghost'
+                                size='sm'
+                                className='flex-shrink-0 h-6 w-6 sm:h-8 sm:w-8 p-0'
+                              >
+                                <MoreHorizontal className='h-3 w-3 sm:h-4 sm:w-4' />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align='end'>
+                              <DropdownMenuItem asChild>
+                                <Link href={`/editor/${project.id}`}>
+                                  <Edit className='h-4 w-4 mr-2' />
+                                  Editar
+                                </Link>
+                              </DropdownMenuItem>
+                              <DropdownMenuItem asChild>
+                                <Link href={`/editor/${project.id}`}>
+                                  <Eye className='h-4 w-4 mr-2' />
+                                  Ver Detalhes
+                                </Link>
+                              </DropdownMenuItem>
+                              <DropdownMenuItem
+                                onClick={() => handleExportPDF(project)}
+                              >
+                                <Download className='h-4 w-4 mr-2' />
+                                Exportar PDF
+                              </DropdownMenuItem>
+                              <DropdownMenuSeparator />
+                              <DropdownMenuItem
+                                className='text-red-600 focus:text-red-600'
+                                onClick={() => setDeleteProjectId(project.id)}
+                              >
+                                <Trash2 className='h-4 w-4 mr-2' />
+                                Excluir
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
                         </div>
+                      </CardHeader>
 
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button variant='ghost' size='sm'>
-                              <MoreHorizontal className='h-4 w-4' />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align='end'>
-                            <DropdownMenuItem asChild>
-                              <Link href={`/editor/${project.id}`}>
-                                <Edit className='h-4 w-4 mr-2' />
-                                Editar
-                              </Link>
-                            </DropdownMenuItem>
-                            <DropdownMenuItem asChild>
-                              <Link href={`/projects/${project.id}`}>
-                                <Eye className='h-4 w-4 mr-2' />
-                                Ver Detalhes
-                              </Link>
-                            </DropdownMenuItem>
-                            <DropdownMenuItem
-                              onClick={() => handleExportPDF(project)}
+                      <CardContent className='pt-0 p-3 sm:p-6'>
+                        <div className='space-y-2 sm:space-y-3'>
+                          <div className='flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2'>
+                            <Badge
+                              variant='secondary'
+                              className={
+                                statusColors[
+                                  project.status as keyof typeof statusColors
+                                ]
+                              }
                             >
-                              <Download className='h-4 w-4 mr-2' />
-                              Exportar PDF
-                            </DropdownMenuItem>
-                            <DropdownMenuSeparator />
-                            <DropdownMenuItem
-                              className='text-red-600 focus:text-red-600'
-                              onClick={() => setDeleteProjectId(project.id)}
-                            >
-                              <Trash2 className='h-4 w-4 mr-2' />
-                              Excluir
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      </div>
-                    </CardHeader>
+                              {
+                                statusLabels[
+                                  project.status as keyof typeof statusLabels
+                                ]
+                              }
+                            </Badge>
+                            <span className='text-xs sm:text-sm text-gray-500'>
+                              {formatDistanceToNow(
+                                new Date(project.updated_at),
+                                {
+                                  addSuffix: true,
+                                  locale: ptBR,
+                                }
+                              )}
+                            </span>
+                          </div>
 
-                    <CardContent className='pt-0'>
-                      <div className='space-y-3'>
-                        <div className='flex items-center justify-between'>
-                          <Badge
-                            variant='secondary'
-                            className={
-                              statusColors[
-                                project.status as keyof typeof statusColors
-                              ]
-                            }
-                          >
-                            {
-                              statusLabels[
-                                project.status as keyof typeof statusLabels
-                              ]
-                            }
-                          </Badge>
-                          <span className='text-sm text-gray-500'>
+                          <div className='flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 text-xs sm:text-sm text-gray-500'>
+                            <div className='flex items-center'>
+                              <Calendar className='h-3 w-3 sm:h-4 sm:w-4 mr-1' />
+                              {formatDate(project.created_at)}
+                            </div>
+                            {project.members && project.members.length > 0 && (
+                              <div className='flex items-center text-xs sm:text-sm text-gray-600'>
+                                <Users className='h-3 w-3 sm:h-4 sm:w-4 mr-1' />
+                                {project.members.length} membro
+                                {project.members.length > 1 ? 's' : ''}
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              ) : (
+                <div className='bg-white rounded-lg border overflow-x-auto'>
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead className='text-xs sm:text-sm'>
+                          Nome
+                        </TableHead>
+                        <TableHead className='text-xs sm:text-sm hidden sm:table-cell'>
+                          Status
+                        </TableHead>
+                        <TableHead className='text-xs sm:text-sm hidden md:table-cell'>
+                          Equipe
+                        </TableHead>
+                        <TableHead className='text-xs sm:text-sm hidden lg:table-cell'>
+                          Criado em
+                        </TableHead>
+                        <TableHead className='text-xs sm:text-sm'>
+                          Atualizado
+                        </TableHead>
+                        <TableHead className='w-[40px] sm:w-[50px]'></TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {filteredProjects.map(project => (
+                        <TableRow key={project.id}>
+                          <TableCell className='min-w-[200px]'>
+                            <div className='space-y-1'>
+                              <Link
+                                href={`/editor/${project.id}`}
+                                className='text-sm sm:text-base font-medium hover:text-blue-600 transition-colors block'
+                              >
+                                {project.title}
+                              </Link>
+                              {project.description && (
+                                <p className='text-xs sm:text-sm text-gray-500 line-clamp-1'>
+                                  {project.description}
+                                </p>
+                              )}
+                              {/* Mobile status badge */}
+                              <div className='sm:hidden mt-1'>
+                                <Badge
+                                  variant='secondary'
+                                  className={`text-xs ${
+                                    statusColors[
+                                      project.status as keyof typeof statusColors
+                                    ]
+                                  }`}
+                                >
+                                  {
+                                    statusLabels[
+                                      project.status as keyof typeof statusLabels
+                                    ]
+                                  }
+                                </Badge>
+                              </div>
+                            </div>
+                          </TableCell>
+                          <TableCell className='hidden sm:table-cell'>
+                            <Badge
+                              variant='secondary'
+                              className={`text-xs sm:text-sm ${
+                                statusColors[
+                                  project.status as keyof typeof statusColors
+                                ]
+                              }`}
+                            >
+                              {
+                                statusLabels[
+                                  project.status as keyof typeof statusLabels
+                                ]
+                              }
+                            </Badge>
+                          </TableCell>
+                          <TableCell className='hidden md:table-cell'>
+                            {project.members && project.members.length > 0 ? (
+                              <div className='flex items-center text-xs sm:text-sm text-gray-600'>
+                                <Users className='h-3 w-3 sm:h-4 sm:w-4 mr-1' />
+                                {project.members.length} membro
+                                {project.members.length > 1 ? 's' : ''}
+                              </div>
+                            ) : (
+                              <span className='text-gray-400 text-xs sm:text-sm'>
+                                -
+                              </span>
+                            )}
+                          </TableCell>
+                          <TableCell className='hidden lg:table-cell text-xs sm:text-sm text-gray-500'>
+                            {formatDate(project.created_at)}
+                          </TableCell>
+                          <TableCell className='text-xs sm:text-sm text-gray-500'>
                             {formatDistanceToNow(new Date(project.updated_at), {
                               addSuffix: true,
                               locale: ptBR,
                             })}
-                          </span>
-                        </div>
-
-                        <div className='flex items-center justify-between text-sm text-gray-500'>
-                          <div className='flex items-center'>
-                            <Calendar className='h-4 w-4 mr-1' />
-                            {formatDate(project.created_at)}
-                          </div>
-                          {project.members && project.members.length > 0 && (
-                            <div className='flex items-center text-sm text-gray-600'>
-                              <Users className='h-4 w-4 mr-1' />
-                              {project.members.length} membro
-                              {project.members.length > 1 ? 's' : ''}
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            )}
+                          </TableCell>
+                          <TableCell>
+                            <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
+                                <Button variant='ghost' size='sm'>
+                                  <MoreHorizontal className='h-4 w-4' />
+                                </Button>
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent align='end'>
+                                <DropdownMenuItem asChild>
+                                  <Link href={`/editor/${project.id}`}>
+                                    <Eye className='h-4 w-4 mr-2' />
+                                    Ver Detalhes
+                                  </Link>
+                                </DropdownMenuItem>
+                                <DropdownMenuItem asChild>
+                                  <Link href={`/editor/${project.id}`}>
+                                    <Edit className='h-4 w-4 mr-2' />
+                                    Editar
+                                  </Link>
+                                </DropdownMenuItem>
+                                <DropdownMenuSeparator />
+                                <DropdownMenuItem
+                                  className='text-red-600 focus:text-red-600'
+                                  onClick={() => setDeleteProjectId(project.id)}
+                                >
+                                  <Trash2 className='h-4 w-4 mr-2' />
+                                  Excluir
+                                </DropdownMenuItem>
+                              </DropdownMenuContent>
+                            </DropdownMenu>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+              )}
+            </div>
           </div>
-
-          {/* Delete Confirmation Dialog */}
-          <AlertDialog
-            open={!!deleteProjectId}
-            onOpenChange={() => setDeleteProjectId(null)}
-          >
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle>Excluir Projeto</AlertDialogTitle>
-                <AlertDialogDescription>
-                  Tem certeza que deseja excluir este projeto? Esta ação não
-                  pode ser desfeita.
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                <AlertDialogAction
-                  onClick={handleDeleteProject}
-                  className='bg-red-600 hover:bg-red-700'
-                  disabled={isDeleting}
-                >
-                  {isDeleting ? 'Excluindo...' : 'Excluir'}
-                </AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
         </div>
+
+        {/* Delete Confirmation Dialog */}
+        <AlertDialog
+          open={!!deleteProjectId}
+          onOpenChange={() => setDeleteProjectId(null)}
+        >
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Excluir Projeto</AlertDialogTitle>
+              <AlertDialogDescription>
+                Tem certeza que deseja excluir este projeto? Esta ação não pode
+                ser desfeita.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancelar</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={handleDeleteProject}
+                className='bg-red-600 hover:bg-red-700'
+                disabled={isDeleting}
+              >
+                {isDeleting ? 'Excluindo...' : 'Excluir'}
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </div>
     </AppLayout>
   );

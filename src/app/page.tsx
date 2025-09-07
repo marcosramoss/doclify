@@ -23,7 +23,9 @@ export default function Home() {
         <nav className='flex items-center justify-between'>
           <div className='flex items-center space-x-2'>
             <FileText className='h-8 w-8 text-blue-600' />
-            <span className='text-2xl font-bold text-gray-900'>Doclify</span>
+            <span className='text-responsive-2xl font-bold text-gray-900'>
+              Doclify
+            </span>
           </div>
           <div className='flex items-center space-x-4'>
             <Link href='/auth/login'>
@@ -38,11 +40,11 @@ export default function Home() {
 
       {/* Hero Section */}
       <section className='container mx-auto px-4 py-20 text-center'>
-        <h1 className='text-5xl font-bold text-gray-900 mb-6'>
+        <h1 className='text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900 mb-6'>
           Gere Documentos de Requisitos
           <span className='text-blue-600'> Profissionais</span>
         </h1>
-        <p className='text-xl text-gray-600 mb-8 max-w-3xl mx-auto'>
+        <p className='text-responsive-lg text-gray-600 mb-8 max-w-3xl mx-auto prose-mobile'>
           Plataforma SaaS completa para criar, gerenciar e exportar documentos
           de análise de requisitos e contratos de forma rápida e profissional.
         </p>

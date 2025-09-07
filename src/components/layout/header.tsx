@@ -50,37 +50,49 @@ export function Header({ onMenuClick, showMenuButton = true }: HeaderProps) {
 
   return (
     <header className='sticky top-0 z-50 w-full border-b bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/60'>
-      <div className='flex h-16 items-center justify-between px-4'>
-        <div className='flex items-center space-x-4'>
+      <div className='flex h-14 sm:h-16 items-center justify-between px-3 sm:px-4'>
+        <div className='flex items-center space-x-2 sm:space-x-4'>
           {showMenuButton && (
             <Button
               variant='ghost'
               size='sm'
               onClick={onMenuClick}
-              className='md:hidden'
+              className='md:hidden p-2'
             >
               <Menu className='h-5 w-5' />
             </Button>
           )}
 
-          <Link href='/dashboard' className='flex items-center space-x-2'>
-            <FileText className='h-6 w-6 text-blue-600' />
-            <span className='text-xl font-bold text-gray-900'>Doclify</span>
+          <Link
+            href='/dashboard'
+            className='flex items-center space-x-1 sm:space-x-2'
+          >
+            <FileText className='h-5 w-5 sm:h-6 sm:w-6 text-blue-600' />
+            <span className='text-responsive-xl font-bold text-gray-900 hidden xs:block'>
+              Doclify
+            </span>
           </Link>
         </div>
 
-        <div className='flex items-center space-x-4'>
+        <div className='flex items-center space-x-2 sm:space-x-4'>
           {/* Notifications */}
-          <Button variant='ghost' size='sm' className='relative'>
-            <Bell className='h-5 w-5' />
+          <Button
+            variant='ghost'
+            size='sm'
+            className='relative p-2 hidden sm:flex'
+          >
+            <Bell className='h-4 w-4 sm:h-5 sm:w-5' />
             <span className='absolute -top-1 -right-1 h-2 w-2 bg-red-500 rounded-full' />
           </Button>
 
           {/* User Menu */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant='ghost' className='relative h-8 w-8 rounded-full'>
-                <Avatar className='h-8 w-8'>
+              <Button
+                variant='ghost'
+                className='relative h-7 w-7 sm:h-8 sm:w-8 rounded-full p-0'
+              >
+                <Avatar className='h-7 w-7 sm:h-8 sm:w-8'>
                   <AvatarImage
                     src={user?.user_metadata?.avatar_url}
                     alt={user?.user_metadata?.full_name || user?.email || ''}
@@ -94,10 +106,10 @@ export function Header({ onMenuClick, showMenuButton = true }: HeaderProps) {
             <DropdownMenuContent className='w-56' align='end' forceMount>
               <DropdownMenuLabel className='font-normal'>
                 <div className='flex flex-col space-y-1'>
-                  <p className='text-sm font-medium leading-none'>
+                  <p className='text-responsive-sm font-medium leading-none'>
                     {user?.user_metadata?.full_name || 'Usuário'}
                   </p>
-                  <p className='text-xs leading-none text-muted-foreground'>
+                  <p className='text-responsive-xs leading-none text-muted-foreground'>
                     {user?.email}
                   </p>
                 </div>

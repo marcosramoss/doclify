@@ -184,11 +184,11 @@ export function FunctionalRequirementsStep({
   return (
     <div className='space-y-6'>
       <div className='text-center'>
-        <CheckSquare className='mx-auto h-12 w-12 text-blue-600 mb-4' />
-        <h2 className='text-2xl font-bold text-gray-900 mb-2'>
+        <CheckSquare className='mx-auto h-10 w-10 sm:h-12 sm:w-12 text-blue-600 mb-4' />
+        <h2 className='text-lg sm:text-xl lg:text-2xl font-bold text-gray-900 mb-2'>
           Requisitos Funcionais
         </h2>
-        <p className='text-gray-600 max-w-2xl mx-auto'>
+        <p className='text-sm sm:text-base text-gray-600 max-w-2xl mx-auto px-4'>
           Defina as funcionalidades específicas que o sistema deve ter. Os
           requisitos funcionais descrevem o que o sistema deve fazer.
         </p>
@@ -207,20 +207,26 @@ export function FunctionalRequirementsStep({
                   Liste todas as funcionalidades que o sistema deve implementar
                 </CardDescription>
               </div>
-              <div className='flex gap-2'>
+              <div className='flex flex-col sm:flex-row gap-2'>
                 {fields.length === 0 && (
                   <Button
                     type='button'
                     variant='outline'
                     size='sm'
                     onClick={() => setShowExamples(!showExamples)}
+                    className='text-xs sm:text-sm'
                   >
                     {showExamples ? 'Ocultar' : 'Ver'} Exemplos
                   </Button>
                 )}
-                <Button type='button' onClick={addRequirement} size='sm'>
-                  <Plus className='h-4 w-4 mr-2' />
-                  Adicionar Requisito
+                <Button
+                  type='button'
+                  onClick={addRequirement}
+                  size='sm'
+                  className='text-xs sm:text-sm'
+                >
+                  <Plus className='h-4 w-4 mr-1 sm:mr-2' />
+                  <span className='hidden sm:inline'>Adicionar </span>Requisito
                 </Button>
               </div>
             </div>
@@ -257,10 +263,12 @@ export function FunctionalRequirementsStep({
             )}
 
             {fields.length === 0 && !showExamples && (
-              <div className='text-center py-8 text-gray-500'>
-                <CheckSquare className='mx-auto h-12 w-12 mb-4 opacity-50' />
-                <p>Nenhum requisito funcional adicionado ainda.</p>
-                <p className='text-sm'>
+              <div className='text-center py-6 sm:py-8 text-gray-500 px-4'>
+                <CheckSquare className='mx-auto h-10 w-10 sm:h-12 sm:w-12 mb-4 opacity-50' />
+                <p className='text-sm sm:text-base'>
+                  Nenhum requisito funcional adicionado ainda.
+                </p>
+                <p className='text-xs sm:text-sm'>
                   Clique em Adicionar Requisito para começar.
                 </p>
               </div>
@@ -295,7 +303,7 @@ export function FunctionalRequirementsStep({
                       </Button>
                     </div>
 
-                    <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
+                    <div className='grid grid-cols-1 lg:grid-cols-2 gap-4'>
                       <div className='space-y-2'>
                         <Label htmlFor={`requirements.${index}.title`}>
                           Título do Requisito *

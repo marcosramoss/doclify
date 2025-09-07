@@ -73,10 +73,10 @@ export function ProjectInfoStep({ onNext, onBack }: ProjectInfoStepProps) {
   return (
     <div className='space-y-6'>
       <div>
-        <h2 className='text-2xl font-bold text-gray-900 mb-2'>
+        <h2 className='text-lg sm:text-xl lg:text-2xl font-bold text-gray-900 mb-2'>
           Informações do Projeto
         </h2>
-        <p className='text-gray-600'>
+        <p className='text-sm sm:text-base text-gray-600'>
           Vamos começar com as informações básicas do seu projeto de
           documentação.
         </p>
@@ -96,9 +96,9 @@ export function ProjectInfoStep({ onNext, onBack }: ProjectInfoStepProps) {
             })}
             className='space-y-6'
           >
-            <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
-              <div className='md:col-span-2'>
-                <Label htmlFor='name' className='mb-2'>
+            <div className='grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6'>
+              <div className='lg:col-span-2'>
+                <Label htmlFor='name' className='mb-2 text-sm sm:text-base'>
                   Nome do Projeto *
                 </Label>
                 <Input
@@ -114,8 +114,11 @@ export function ProjectInfoStep({ onNext, onBack }: ProjectInfoStepProps) {
                 )}
               </div>
 
-              <div className='md:col-span-2'>
-                <Label htmlFor='description' className='mb-2'>
+              <div className='lg:col-span-2'>
+                <Label
+                  htmlFor='description'
+                  className='mb-2 text-sm sm:text-base'
+                >
                   Descrição
                 </Label>
                 <Textarea
@@ -137,7 +140,7 @@ export function ProjectInfoStep({ onNext, onBack }: ProjectInfoStepProps) {
               </div>
 
               <div>
-                <Label htmlFor='status' className='mb-2'>
+                <Label htmlFor='status' className='mb-2 text-sm sm:text-base'>
                   Status do Projeto
                 </Label>
                 <Select
@@ -168,7 +171,7 @@ export function ProjectInfoStep({ onNext, onBack }: ProjectInfoStepProps) {
               </div>
             </div>
 
-            <div className='flex justify-between pt-6'>
+            <div className='flex flex-col sm:flex-row justify-between gap-3 sm:gap-0 pt-6'>
               <div>
                 {onBack && (
                   <Button type='button' variant='outline' onClick={onBack}>
@@ -184,18 +187,20 @@ export function ProjectInfoStep({ onNext, onBack }: ProjectInfoStepProps) {
 
       {/* Help Card */}
       <Card className='bg-blue-50 border-blue-200'>
-        <CardContent className='pt-6'>
-          <div className='flex items-start space-x-3'>
+        <CardContent className='pt-4 sm:pt-6'>
+          <div className='flex items-start space-x-2 sm:space-x-3'>
             <div className='flex-shrink-0'>
-              <div className='flex items-center justify-center w-8 h-8 bg-blue-100 rounded-full'>
-                <span className='text-blue-600 text-sm font-medium'>💡</span>
+              <div className='flex items-center justify-center w-7 h-7 sm:w-8 sm:h-8 bg-blue-100 rounded-full'>
+                <span className='text-blue-600 text-xs sm:text-sm font-medium'>
+                  💡
+                </span>
               </div>
             </div>
             <div>
-              <h4 className='text-sm font-medium text-blue-900 mb-1'>
+              <h4 className='text-xs sm:text-sm font-medium text-blue-900 mb-1'>
                 Dicas para um bom nome de projeto
               </h4>
-              <ul className='text-sm text-blue-800 space-y-1'>
+              <ul className='text-xs sm:text-sm text-blue-800 space-y-1'>
                 <li>• Use um nome claro e descritivo</li>
                 <li>• Evite abreviações muito técnicas</li>
                 <li>• Considere o público que lerá a documentação</li>
